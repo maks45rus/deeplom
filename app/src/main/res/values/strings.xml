@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">rashgpu</string>
+    <string name="search">search</string>
+    <string name="main">main</string>
+    <string name="favorite">favorite</string>
+    <string name="menu">menu</string>
+    <string name="settings">settings</string>
+    <string name="groups">groups</string>
+    <string name="teachers">teachers</string>
+    <string name="find">find</string>
+    <string name="selectchip">Choose group or teacher</string>
+</resources>

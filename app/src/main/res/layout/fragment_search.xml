@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,19 +13,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spin_list"
+        app:layout_constraintTop_toBottomOf="@+id/actw_list"
         app:layout_constraintVertical_bias="0.35" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_holder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/spin_list"
+        app:layout_constraintBottom_toTopOf="@+id/actw_list"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.328"
+        app:layout_constraintVertical_bias="0.608"
         app:singleSelection="true">
 
         <com.google.android.material.chip.Chip
@@ -44,26 +43,15 @@
             android:text="@string/teachers" />
     </com.google.android.material.chip.ChipGroup>
 
-    <SearchView
-        android:id="@+id/sv_list"
-        android:background="@color/gray"
+    <AutoCompleteTextView
+        android:id="@+id/actw_list"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:layout_margin="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/spin_list"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chip_holder" />
-
-    <Spinner
-        android:id="@+id/spin_list"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_margin="20dp"
-        android:background="@color/gray"
+        android:hint="@string/search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.6"
+        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.499" />

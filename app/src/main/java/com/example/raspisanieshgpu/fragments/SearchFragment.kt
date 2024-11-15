@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class SearchFragment: Fragment() {
     private lateinit var binding: FragmentSearchBinding
-    private lateinit var spinnerAdapter: ArrayAdapter<String>
+    private lateinit var acAdapter: ArrayAdapter<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,28 +25,24 @@ class SearchFragment: Fragment() {
         var check = ""
         binding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        spinnerAdapter = ArrayAdapter(requireContext(), R.layout.item_list, R.id.item_text)
-        binding.spinList.adapter = spinnerAdapter
+        acAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line)
+        binding.actwList.setAdapter(acAdapter)
 
         binding.chipHolder.setOnCheckedStateChangeListener { _, checkedIds ->
-            when(checkedIds.firstOrNull()){
-                R.id.chip_group -> {
-                    check = "group"
-                    updateSpinnerAdapter(check)
-                }
-                R.id.chip_teacher -> {
-                    check = "teacher"
-                    updateSpinnerAdapter(check)
-                }
-                else -> check = ""
+           check = when(checkedIds.firstOrNull()){
+                R.id.chip_group -> "group"
+                R.id.chip_teacher -> "teacher"
+                else -> ""
             }
+            updateSpinnerAdapter(check)
         }
 
         binding.btnSearch.setOnClickListener{
-            if(binding.chipHolder.checkedChipIds.isEmpty()) {
+            val x = binding.actwList.text.toString()
+            if((x == "") or (check == "")) {
                 Toast.makeText(requireContext(),R.string.selectchip,Toast.LENGTH_LONG).show()
             }else{
-                val fr = RaspisanieFragment.send(binding.spinList.selectedItem.toString(),check)
+                val fr = RaspisanieFragment.send(x,check)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.main_cont, fr)
                     .commit()
@@ -61,15 +57,13 @@ class SearchFragment: Fragment() {
         val db = databaseobj.database
         var itemlist: List<String> = mutableListOf()
         viewLifecycleOwner.lifecycleScope.launch {
-            if (type == "group") {
-                itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }
-            }
-            if(type == "teacher"){
-                itemlist = db.getTeacherDao().getAllTeachers().map { tc -> tc.name }
-            }
-        spinnerAdapter.clear()
-        spinnerAdapter.addAll(itemlist)
-        spinnerAdapter.notifyDataSetChanged()
+           when(type){
+               "group" -> itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }
+               "teacher" -> itemlist = db.getTeacherDao().getAllTeachers().map { tc -> tc.name }
+           }
+        acAdapter.clear()
+        acAdapter.addAll(itemlist)
+        acAdapter.notifyDataSetChanged()
 
         }
     }

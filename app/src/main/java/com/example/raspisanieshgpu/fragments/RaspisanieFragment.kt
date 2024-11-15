@@ -11,15 +11,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.R
+import com.example.raspisanieshgpu.adapter.PairsAdapter
 import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 class RaspisanieFragment : Fragment() {
 
@@ -50,42 +51,57 @@ class RaspisanieFragment : Fragment() {
 
 
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
-        rasisanieAdapter = ArrayAdapter(requireContext(), R.layout.item_list, R.id.item_text)
+        rasisanieAdapter = PairsAdapter(requireContext(), R.layout.item_list)
         binding.raspisanieList.adapter = rasisanieAdapter
 
-        val namesearch = arguments?.getString(NAME_SEARCH).toString()
+        var namesearch = arguments?.getString(NAME_SEARCH).toString()
         val pairsfor = arguments?.getString(PAIRS_FOR).toString()
+
+
         val db = databaseobj.database
+
+        if(pairsfor == "teacher"){
+            val parts = namesearch.split(" ")
+            var formatedname = parts[0] + " "
+            for (i in 1 until parts.size) {
+                if (parts[i].isNotEmpty()) {
+                    formatedname += ("${parts[i][0]}. ") // Добавляем первую букву с точкой
+                }
+            }
+            namesearch = formatedname
+        }
 
         binding.textDate.text = namesearch
 
        viewLifecycleOwner.lifecycleScope.launch {
            withContext(Dispatchers.Main) {
                try {
-                   var idsearch = 0
-                   if (pairsfor == "group")
-                       idsearch = db.getGroupDao().getGroupByName(namesearch).id!!
-                   if (pairsfor == "teacher")
-                       idsearch = db.getTeacherDao().getTeacherByName(namesearch).id!!
 
-                   val currentDate = LocalDate.now()
+                   val idsearch = when(pairsfor) {
+                       "group" -> db.getGroupDao().getGroupByName(namesearch).id!!
+                       "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
+                       else -> 0
+                   }
+                   val now = LocalDate.now()
+                   val monday = now.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                   val date = currentDate.format(format)
-                   val newrasp = DataManager.fetchPairs(date, 1, idsearch, pairsfor)
+                   val startweek = monday.format(format)
+
+                   val newrasp = DataManager.fetchPairs(startweek, 1, idsearch, pairsfor)
 
                    if (newrasp.result.isNotEmpty()) {
                        updateRaspisanie(newrasp)
                    } else {
                        rasisanieAdapter.addAll(rasp)
                        rasisanieAdapter.notifyDataSetChanged()
-                       Toast.makeText(requireContext(), "расписание не найдено", Toast.LENGTH_LONG)
+                       Toast.makeText(requireContext(), "pairs not found", Toast.LENGTH_LONG)
                            .show()
                    }
 
                } catch (e: Exception) {
                    rasisanieAdapter.addAll(rasp)
                    rasisanieAdapter.notifyDataSetChanged()
-                   Log.e("RaspisanieFragment", ":zzz ${e.message}", e)
+                   Log.e("RaspisanieFragment", ":err add: ${e.message}", e)
                }
            }
        }
@@ -98,8 +114,18 @@ class RaspisanieFragment : Fragment() {
             Log.e("RaspisanieFragment", "no raspisania")
             return
         }
-        allpairs.result[0].pairs.forEach { para ->
-            rasp[para.num - 1] = para.text
+
+        val days = allpairs.result
+        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val curdate = LocalDate.now().format(format)
+
+        for (day in days) {
+            if (day.date == curdate) {
+                day.pairs.forEach { para ->
+                    rasp[para.num - 1] = para.text
+                }
+                break
+            }
         }
 
         rasisanieAdapter.clear()

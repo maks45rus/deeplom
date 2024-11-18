@@ -1,6 +1,7 @@
 package com.example.raspisanieshgpu.api
 
 import android.util.Log
+import com.example.raspisanieshgpu.DataBase.Faculty
 import com.example.raspisanieshgpu.DataBase.Group
 import com.example.raspisanieshgpu.DataBase.Teacher
 import com.example.raspisanieshgpu.DataBase.databaseobj
@@ -15,10 +16,10 @@ object DataManager {
     suspend fun fetchAndSaveTeachers() {
         withContext(Dispatchers.IO) {
             try {
-                val Response = apiService.getTeachers()
-                if(!Response.ok)
-                    throw Exception(Response.error)
-                val teachers = Response.result.map { Teacher(id = it.id, name = it.name) }
+                val response = apiService.getTeachers()
+                if(!response.ok)
+                    throw Exception(response.error)
+                val teachers = response.result.map { Teacher(id = it.id, name = it.name) }
                 db.getTeacherDao().deleteAll()
                 db.getTeacherDao().insertAll(teachers)
             }catch (e: Exception){
@@ -32,12 +33,16 @@ object DataManager {
         withContext(Dispatchers.IO) {
             try {
 
-                val Response = apiService.getGroups()
-                if(!Response.ok)
-                    throw Exception(Response.error)
-                val groups = Response.result.flatMap {
-                    it.groups.map { group -> Group(id = group.id, name = group.name) } }
-                db.getGroupDao().deleteAll()
+                val response = apiService.getGroups()
+                if(!response.ok)
+                    throw Exception(response.error)
+                val faculties = response.result.map {Faculty(name = it.faculty)}
+                db.getFacultyDao().insertAll(faculties)
+
+                val groups = response.result.flatMap {fac -> fac.groups.map { group ->
+                        Group(id = group.id, name = group.name, facultyId = db.getFacultyDao().getFacultyByName(fac.faculty).id!!)
+                    }
+                }
                 db.getGroupDao().insertAll(groups)
             } catch (e: Exception) {
                 Log.e("DataManager", "Error fetching data groups: ${e.message}", e)
@@ -46,16 +51,16 @@ object DataManager {
     }
 
     suspend fun fetchPairs(date: String, week: Int, id: Int, pairsfor: String): PairsResponse {
-        lateinit var Response: PairsResponse
+        lateinit var response: PairsResponse
         withContext(Dispatchers.IO) {
             try {
-                if(pairsfor == "group") Response = apiService.getPairsGroup(date,week,id)
-                else                    Response = apiService.getPairsTeacher(date,week,id)
+                if(pairsfor == "group") response = apiService.getPairsGroup(date,week,id)
+                else                    response = apiService.getPairsTeacher(date,week,id)
             } catch (e: Exception) {
                 Log.e("DataManager", "Error fetching data groups $date,$week,$id,$pairsfor: ${e.message}", e)
             }
         }
-        return Response
+        return response
     }
 
 }

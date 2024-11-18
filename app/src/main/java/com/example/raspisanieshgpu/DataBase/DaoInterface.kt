@@ -2,15 +2,16 @@ package com.example.raspisanieshgpu.DataBase
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 
 @Dao
 interface TeacherDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(teacher: Teacher)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(teachers: List<Teacher>)
 
     @Update
@@ -31,10 +32,10 @@ interface TeacherDao {
 
 @Dao
 interface FacultyDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(faculty: Faculty)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(faculties: List<Faculty>)
 
     @Update
@@ -49,14 +50,17 @@ interface FacultyDao {
     @Query("SELECT * FROM Faculty WHERE id = :id")
     suspend fun getFacultyById(id: Int): Faculty
 
+    @Query("SELECT * FROM Faculty WHERE name = :name")
+    suspend fun getFacultyByName(name: String): Faculty
+
 }
 
 @Dao
 interface GroupDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(group: Group)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(groups: List<Group>)
 
     @Update
@@ -73,5 +77,8 @@ interface GroupDao {
 
     @Query("SELECT * FROM `Group` WHERE name = :name")
     suspend fun getGroupByName(name: String): Group
+
+    @Query("SELECT * FROM `Group` WHERE facultyId = :facultyId")
+    suspend fun getGroupsByFacultyId(facultyId: Int): List<Group>
 
 }

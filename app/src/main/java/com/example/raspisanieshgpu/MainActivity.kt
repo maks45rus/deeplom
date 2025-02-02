@@ -2,7 +2,6 @@ package com.example.raspisanieshgpu
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.databinding.ActivityMainBinding

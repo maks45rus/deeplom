@@ -37,48 +37,39 @@ class MainActivity : AppCompatActivity() {
                 DataManager.fetchAndSaveGroups()
         }
 
-        binding.BtnMenu.setOnClickListener {
-            binding.mainLayout.openDrawer(GravityCompat.START)
+        // Обработка кликов по кнопкам
+        binding.btnHome.setOnClickListener {
+            loadFragment(homeFragment)
+            updateButtonState(R.id.btnHome)
+        }
+        binding.btnSearch.setOnClickListener {
+            loadFragment(searchFragment)
+            updateButtonState(R.id.btnSearch)
+        }
+        binding.btnSaved.setOnClickListener {
+            loadFragment(savedFragment)
+            updateButtonState(R.id.btnSaved)
         }
 
-        binding.botNav.setNavigationItemSelectedListener  { menuItem ->
-            when (menuItem.itemId) {
-                R.id.HomeFragment -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_cont, homeFragment)
-                        .commit()
-
-                }
-                R.id.SearchFragment -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_cont, searchFragment)
-                        .commit()
-
-                }
-                R.id.SavedFragment -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_cont, savedFragment)
-                        .commit()
-
-                }
-
-            }
-
-            binding.mainLayout.closeDrawers()
-            true
+        // Установка начального фрагмента (HomeFragment)
+        if (savedInstanceState == null) {
+            loadFragment(homeFragment)
+            updateButtonState(R.id.btnHome)
         }
-
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_cont, savedFragment)
-            .commit()
-
-
     }
 
 
+    private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_cont, fragment)
+            .commit()
+    }
 
-
-
+    private fun updateButtonState(selectedButtonId: Int) {
+        binding.btnHome.isSelected = selectedButtonId == R.id.btnHome
+        binding.btnSearch.isSelected = selectedButtonId == R.id.btnSearch
+        binding.btnSaved.isSelected = selectedButtonId == R.id.btnSaved
+    }
 
 }
 

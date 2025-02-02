@@ -11,61 +11,81 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@color/top_panel"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/BtnMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:contentDescription="@string/menu"
-                android:src="@drawable/baseline_menu_open_24" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/app_name"
-                android:textColor="@color/top_panel_icon"
-                android:textSize="30sp" />
-
-            <ImageView
-                android:id="@+id/BtnSettings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="20dp"
-                android:contentDescription="@string/settings"
-                android:src="@drawable/baseline_settings_24" />
-
-        </androidx.appcompat.widget.Toolbar>
-
         <FrameLayout
             android:id="@+id/main_cont"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/bot_nav"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+        </FrameLayout>
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/bot_nav"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/bot_panel"
+            android:padding="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+            app:contentInsetStart="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:weightSum="3"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/btnSaved"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/favorite"
+                    android:src="@drawable/baseline_star_24"
+                    android:scaleType="centerInside"
+                    android:background="@drawable/button_state_selector"
+                    android:stateListAnimator="@animator/button_scale_animator"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <ImageView
+                    android:id="@+id/btnHome"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/main"
+                    android:src="@drawable/baseline_home_24"
+                    android:scaleType="centerInside"
+                    android:background="@drawable/button_state_selector"
+                    android:stateListAnimator="@animator/button_scale_animator"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <ImageView
+                    android:id="@+id/btnSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/search"
+                    android:src="@drawable/baseline_search_24"
+                    android:scaleType="centerInside"
+                    android:background="@drawable/button_state_selector"
+                    android:stateListAnimator="@animator/button_scale_animator"
+                    android:clickable="true"
+                    android:focusable="true"/>
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/bot_nav"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header"
-        app:menu="@menu/nav_menu" />
+
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Активное состояние (выбранный фрагмент) -->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#40000000" /> <!-- Темный фон для активной кнопки -->
+        </shape>
+    </item>
+    <!-- Неактивное состояние -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" /> <!-- Прозрачный фон для неактивной кнопки -->
+        </shape>
+    </item>
+</selector>

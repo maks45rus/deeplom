@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Состояние при нажатии -->
+    <item android:state_pressed="true">
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:duration="100"
+                android:valueTo="0.95" /> <!-- Уменьшение по X -->
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:duration="100"
+                android:valueTo="0.95" /> <!-- Уменьшение по Y -->
+        </set>
+    </item>
+    <!-- Состояние по умолчанию -->
+    <item>
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:duration="100"
+                android:valueTo="1.0" /> <!-- Возврат к исходному размеру по X -->
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:duration="100"
+                android:valueTo="1.0" /> <!-- Возврат к исходному размеру по Y -->
+        </set>
+    </item>
+</selector>

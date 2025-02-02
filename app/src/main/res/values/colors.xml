@@ -4,8 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#A6A6A6</color>
 
-    <color name="top_panel">#EBA4</color>
-    <color name="top_panel_icon">#45454545</color>
+    <color name="bot_panel">#EBA4</color>
+    <color name="bot_panel_icon">#45454545</color>
 
     <color name="menu">#FFFFFFFF</color>
     <color name="menu_icon">#CACA141E</color>

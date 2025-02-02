@@ -1,5 +1,6 @@
 package com.example.raspisanieshgpu.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -87,10 +88,11 @@ class RaspisanieFragment : Fragment() {
                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                    val startweek = monday.format(format)
 
-                   val newrasp = DataManager.fetchPairs(startweek, 1, idsearch, pairsfor)
+                   val newrasp = DataManager.fetchPairs("2025-02-03", 1, idsearch, pairsfor)
 
                    if (newrasp.result.isNotEmpty()) {
                        updateRaspisanie(newrasp)
+
                    } else {
                        rasisanieAdapter.addAll(rasp)
                        rasisanieAdapter.notifyDataSetChanged()
@@ -117,7 +119,7 @@ class RaspisanieFragment : Fragment() {
 
         val days = allpairs.result
         val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val curdate = LocalDate.now().format(format)
+        val curdate = LocalDate.now().plusDays(1).format(format)
 
         for (day in days) {
             if (day.date == curdate) {
@@ -132,6 +134,5 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.addAll(rasp)
         rasisanieAdapter.notifyDataSetChanged()
     }
-
 
 }

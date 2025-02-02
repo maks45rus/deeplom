@@ -6,10 +6,9 @@
     android:layout_height="match_parent">
 
     <FrameLayout
-        android:id="@+id/frameLayout"
+        android:id="@+id/name_layout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -23,21 +22,32 @@
             android:text=""
             android:textSize="20sp" />
 
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/date_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name_layout">
+
         <Button
             android:id="@+id/btn_prev"
             android:layout_width="50dp"
             android:layout_height="30dp"
+            android:layout_gravity="start|center_vertical"
             android:layout_margin="10dp"
-            android:background="@drawable/baseline_arrow_back_ios_24"
-            android:layout_gravity="start|center_vertical" />
+            android:background="@drawable/baseline_arrow_back_ios_24" />
 
         <Button
             android:id="@+id/btn_next"
             android:layout_width="50dp"
             android:layout_height="30dp"
+            android:layout_gravity="end|center_vertical"
             android:layout_margin="10dp"
-            android:background="@drawable/baseline_arrow_forward_ios_24"
-            android:layout_gravity="end|center_vertical" />
+            android:background="@drawable/baseline_arrow_forward_ios_24" />
     </FrameLayout>
 
     <ListView
@@ -47,5 +57,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout"/>
+        app:layout_constraintTop_toBottomOf="@+id/date_layout"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

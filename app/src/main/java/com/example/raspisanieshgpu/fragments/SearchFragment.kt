@@ -37,14 +37,14 @@ class SearchFragment: Fragment() {
             updateSpinnerAdapter(check)
         }
 
-        binding.btnSearch.setOnClickListener{
+        binding.btnSearch.setOnClickListener {
             val x = binding.actwList.text.toString()
-            if((x == "") or (check == "")) {
-                Toast.makeText(requireContext(),R.string.selectchip,Toast.LENGTH_LONG).show()
-            }else{
-                val fr = RaspisanieFragment.send(x,check)
+            if ((x == "") or (check == "")) {
+                Toast.makeText(requireContext(), R.string.selectchip, Toast.LENGTH_LONG).show()
+            } else {
+                val fr = RaspisanieFragment.send(x, check)
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_cont, fr)
+                    .add(R.id.main_cont, fr, "lastRasp")
                     .addToBackStack("lastRasp")
                     .commit()
             }

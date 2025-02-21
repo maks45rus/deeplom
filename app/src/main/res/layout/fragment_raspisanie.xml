@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/text_date"
+            android:id="@+id/pairs_for"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"
@@ -33,6 +33,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/name_layout">
 
+        <TextView
+            android:id="@+id/text_date"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text=""
+            android:textSize="20sp" />
+
         <Button
             android:id="@+id/btn_prev"
             android:layout_width="50dp"
@@ -50,12 +59,22 @@
             android:background="@drawable/baseline_arrow_forward_ios_24" />
     </FrameLayout>
 
-    <ListView
-        android:id="@+id/raspisanie_list"
-        android:layout_width="match_parent"
+    <FrameLayout
         android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date_layout"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintTop_toBottomOf="@+id/date_layout">
+
+        <ListView
+            android:id="@+id/raspisanie_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/date_layout" />
+    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>

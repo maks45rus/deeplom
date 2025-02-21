@@ -49,80 +49,107 @@ class RaspisanieFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-
-
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         rasisanieAdapter = PairsAdapter(requireContext(), R.layout.item_list)
         binding.raspisanieList.adapter = rasisanieAdapter
 
-        var namesearch = arguments?.getString(NAME_SEARCH).toString()
-        val pairsfor = arguments?.getString(PAIRS_FOR).toString()
 
+        val namesearch = arguments?.getString(NAME_SEARCH).toString()
+        val pairsfor = arguments?.getString(PAIRS_FOR).toString()
+        var idsearch = 0
 
         val db = databaseobj.database
 
-        if(pairsfor == "teacher"){
-            val parts = namesearch.split(" ")
-            var formatedname = parts[0] + " "
-            for (i in 1 until parts.size) {
-                if (parts[i].isNotEmpty()) {
-                    formatedname += ("${parts[i][0]}. ") // Добавляем первую букву с точкой
-                }
+
+        binding.pairsFor.text = when (pairsfor) {
+            "teacher" -> {formatName(namesearch) // ФИО в формат Фамилия И. О.
             }
-            namesearch = formatedname
+            else -> namesearch
         }
 
-        binding.textDate.text = namesearch
+        var currentDay = LocalDate.now() // Текущая дата
+        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-       viewLifecycleOwner.lifecycleScope.launch {
-           withContext(Dispatchers.Main) {
-               try {
+        binding.btnPrev.setOnClickListener {
+            currentDay = currentDay.minusDays(1) // Переключение на предыдущий день
+            loadScheduleForDay(currentDay.format(format), idsearch, pairsfor)
+        }
 
-                   val idsearch = when(pairsfor) {
-                       "group" -> db.getGroupDao().getGroupByName(namesearch).id!!
-                       "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
-                       else -> 0
-                   }
-                   val now = LocalDate.now()
-                   val monday = now.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
-                   val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                   val startweek = monday.format(format)
+        binding.btnNext.setOnClickListener {
+            currentDay = currentDay.plusDays(1) // Переключение на следующий день
+            loadScheduleForDay(currentDay.format(format), idsearch, pairsfor)
+        }
 
-                   val newrasp = DataManager.fetchPairs(startweek, 1, idsearch, pairsfor)
+        viewLifecycleOwner.lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                try {
+                    idsearch = when (pairsfor) {
+                        "group" -> db.getGroupDao().getGroupByName(namesearch).id!!
+                        "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
+                        else -> 0
+                    }
+                    Log.d("RaspisanieFragment", "ID search: $idsearch")
 
-                   if (newrasp.result.isNotEmpty()) {
-                       updateRaspisanie(newrasp)
+                    // Загрузка расписания для текущего дня
+                    loadScheduleForDay(currentDay.format(format), idsearch, pairsfor)
 
-                   } else {
-                       rasisanieAdapter.addAll(rasp)
-                       rasisanieAdapter.notifyDataSetChanged()
-                       Toast.makeText(requireContext(), "pairs not found", Toast.LENGTH_LONG)
-                           .show()
-                   }
-
-               } catch (e: Exception) {
-                   rasisanieAdapter.addAll(rasp)
-                   rasisanieAdapter.notifyDataSetChanged()
-                   Log.e("RaspisanieFragment", ":err add: ${e.message}", e)
-               }
-           }
-       }
+                } catch (e: Exception) {
+                    rasisanieAdapter.addAll(rasp)
+                    rasisanieAdapter.notifyDataSetChanged()
+                    Log.e("RaspisanieFragment", ":err add: ${e.message}", e)
+                }
+            }
+        }
 
         return binding.root
     }
 
-    private fun updateRaspisanie(allpairs: PairsResponse) {
+
+
+    private fun loadScheduleForDay(date: String, idsearch: Int, pairsfor: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                try {
+                    val newrasp = DataManager.fetchPairs(date, 1, idsearch, pairsfor)
+                    if (newrasp.result.isNotEmpty()) {
+                        updateRaspisanie(newrasp,date)
+                        binding.textDate.text = date // Обновляем текст даты
+                    } else {
+                        Toast.makeText(requireContext(), "No schedule for this day", Toast.LENGTH_LONG).show()
+                        rasisanieAdapter.clear()
+                        rasisanieAdapter.addAll(rasp)
+                        rasisanieAdapter.notifyDataSetChanged()
+                    }
+                } catch (e: Exception) {
+                    Log.e("RaspisanieFragment", "Error loading schedule: ${e.message}", e)
+                    when (e) {
+                        is java.net.UnknownHostException -> {
+                            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_LONG).show()
+                        }
+                        else -> {
+                            Toast.makeText(requireContext(), "Failed to load schedule: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateRaspisanie(allpairs: PairsResponse, date: String) {
         if(!allpairs.ok){
             Log.e("RaspisanieFragment", "no raspisania")
             return
         }
 
+        for (i in rasp.indices) {
+            rasp[i] = "-"
+        }
+
         val days = allpairs.result
         val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val curdate = LocalDate.now().format(format)
 
         for (day in days) {
-            if (day.date == curdate) {
+            if (day.date == date) {
                 day.pairs.forEach { para ->
                     rasp[para.num - 1] = para.text
                 }
@@ -134,5 +161,12 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.addAll(rasp)
         rasisanieAdapter.notifyDataSetChanged()
     }
+
+    private fun formatName(fullName: String): String {
+        val parts = fullName.split(" ")
+        if (parts.size < 2) return fullName
+        return "${parts[0]} ${parts.subList(1, parts.size).joinToString(" ") { it.take(1) + "." }}"
+    }
+
 
 }

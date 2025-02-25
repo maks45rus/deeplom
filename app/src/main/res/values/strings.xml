@@ -10,4 +10,5 @@
     <string name="find">find</string>
     <string name="selectchip">Choose group or teacher</string>
     <string name="scheduleerror">No schedule for this day</string>
+    <string name="todo">TODO</string>
 </resources>

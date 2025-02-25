@@ -198,7 +198,6 @@ class RaspisanieFragment : Fragment() {
         }
 
         val days = allpairs.result
-        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
         for (day in days) {
             if (day.date == date) {

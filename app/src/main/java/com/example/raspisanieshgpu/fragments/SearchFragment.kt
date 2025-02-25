@@ -44,8 +44,7 @@ class SearchFragment: Fragment() {
             } else {
                 val fr = RaspisanieFragment.send(x, check)
                 parentFragmentManager.beginTransaction()
-                    .add(R.id.main_cont, fr, "lastRasp")
-                    .addToBackStack("lastRasp")
+                    .replace(R.id.main_cont, fr)
                     .commit()
             }
         }

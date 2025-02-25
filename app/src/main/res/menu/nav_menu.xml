@@ -6,7 +6,7 @@
         android:id="@+id/SavedFragment"/>
 
     <item android:title="@string/main"
-        android:icon="@drawable/baseline_home_24"
+        android:icon="@drawable/baseline_home_unselected"
         android:id="@+id/HomeFragment"/>
 
     <item android:title="@string/search"

@@ -1,6 +1,8 @@
 package com.example.raspisanieshgpu.fragments
 
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,7 @@ import com.example.raspisanieshgpu.databinding.FragmentHomeBinding
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -19,20 +22,15 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
-        // Проверяем, есть ли сохраненный фрагмент в Back Stack
-        val fragmentManager = parentFragmentManager
-        val savedFragment = fragmentManager.findFragmentByTag("lastRasp")
+        val homeName = sharedPreferences.getString("home_name", null).toString()
+        val homeType = sharedPreferences.getString("home_type", null).toString()
+        val fr = RaspisanieFragment.send(homeName, homeType)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.main_cont, fr)
+            .commit()
 
-        if (savedFragment != null) {
-            // Если фрагмент найден, отображаем его
-            fragmentManager.beginTransaction()
-                .replace(R.id.main_cont, savedFragment, "lastRasp")
-                .commit()
-        } else {
-            // Иначе отображаем стандартный контент для HomeFragment
-            binding.homeText.text = "последнее расписание"
-        }
 
         return binding.root
     }

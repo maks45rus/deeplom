@@ -9,6 +9,7 @@
         android:id="@+id/name_layout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
+        android:background="@color/top_panel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -19,8 +20,16 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textColor="@color/top_panel_text"
             android:text=""
             android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/btn_sethome"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_margin="10dp" />
 
     </FrameLayout>
 
@@ -31,6 +40,7 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/top_panel2"
         app:layout_constraintTop_toBottomOf="@+id/name_layout">
 
         <TextView
@@ -39,24 +49,25 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textColor="@color/top_panel_text"
             android:text=""
             android:textSize="20sp" />
 
-        <Button
+        <ImageView
             android:id="@+id/btn_prev"
             android:layout_width="50dp"
             android:layout_height="30dp"
             android:layout_gravity="start|center_vertical"
             android:layout_margin="10dp"
-            android:background="@drawable/baseline_arrow_back_ios_24" />
+            android:src="@drawable/baseline_arrow_back_ios_24" />
 
-        <Button
+        <ImageView
             android:id="@+id/btn_next"
             android:layout_width="50dp"
             android:layout_height="30dp"
             android:layout_gravity="end|center_vertical"
             android:layout_margin="10dp"
-            android:background="@drawable/baseline_arrow_forward_ios_24" />
+            android:src="@drawable/baseline_arrow_forward_ios_24" />
     </FrameLayout>
 
     <FrameLayout

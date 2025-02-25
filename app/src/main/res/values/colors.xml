@@ -4,11 +4,14 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#A6A6A6</color>
 
-    <color name="bot_panel">#EBA4</color>
-    <color name="bot_panel_icon">#45454545</color>
+    <color name="btn_color">#1c8b78</color>
 
-    <color name="menu">#FFFFFFFF</color>
-    <color name="menu_icon">#CACA141E</color>
-    <color name="menu_text">#FACFACFF</color>
+    <color name="top_panel">#1c8b78</color>
+    <color name="top_panel2">#146457</color>
+    <color name="top_panel_icon">#FFFFFF</color>
+    <color name="top_panel_text">#FFFFFF</color>
+
+    <color name="bot_menu">#1c8b78</color>
+    <color name="bot_menu_icon">#FFFFFF</color>
 
 </resources>

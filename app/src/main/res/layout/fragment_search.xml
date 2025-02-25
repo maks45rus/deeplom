@@ -9,14 +9,13 @@
         android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         android:text="@string/find"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/actw_list"
-        app:layout_constraintVertical_bias="0.35" />
+        app:layout_constraintVertical_bias="0.347" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_holder"

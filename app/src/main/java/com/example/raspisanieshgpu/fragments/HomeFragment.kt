@@ -4,6 +4,7 @@ package com.example.raspisanieshgpu.fragments
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,12 +25,16 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
-        val homeName = sharedPreferences.getString("home_name", null).toString()
-        val homeType = sharedPreferences.getString("home_type", null).toString()
-        val fr = RaspisanieFragment.send(homeName, homeType)
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.main_cont, fr)
-            .commit()
+        val homeName = sharedPreferences.getString("home_name", null)
+        val homeType = sharedPreferences.getString("home_type", null)
+        if (homeName==null || homeType==null) {
+            binding.homeText.text = "Задайте стартовое расписание"
+        } else {
+            val fr = RaspisanieFragment.send(homeName.toString(), homeType.toString())
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_cont, fr)
+                .commit()
+        }
 
 
         return binding.root

@@ -56,6 +56,7 @@ class SearchFragment: Fragment() {
     private fun updateSpinnerAdapter(type: String) {
         val db = databaseobj.database
         var itemlist: List<String> = mutableListOf()
+
         viewLifecycleOwner.lifecycleScope.launch {
            when(type){
                "group" -> itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }

@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
             updateButtonState(R.id.btnSaved)
         }
 
-        // Установка начального фрагмента (HomeFragment)
         if (savedInstanceState == null) {
             loadFragment(homeFragment)
             updateButtonState(R.id.btnHome)

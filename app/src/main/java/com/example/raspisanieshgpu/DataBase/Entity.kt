@@ -13,29 +13,13 @@ data class Teacher (
     var name: String,
 )
 
-@Entity(tableName = "Faculty")
-data class Faculty (
-    @PrimaryKey(autoGenerate = true)
-    var id: Int? = null,
-    @ColumnInfo(name = "name")
-    var name: String,
 
-)
-
-@Entity(tableName = "Group",
-    foreignKeys = [
-        ForeignKey(entity = Faculty::class,
-            parentColumns = ["id"],
-            childColumns = ["facultyId"],
-            onDelete = ForeignKey.CASCADE)
-    ])
+@Entity(tableName = "Group")
 data class Group (
     @PrimaryKey(autoGenerate = true)
     var id: Int? = null,
     @ColumnInfo(name = "name")
     var name: String,
-    @ColumnInfo(name = "facultyId")
-    var facultyId: Int,
     @ColumnInfo(name = "inFavorites")
     var inFavorites: Boolean = false
 )

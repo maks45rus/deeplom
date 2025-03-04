@@ -32,9 +32,12 @@ class RaspisanieFragment : Fragment() {
     private lateinit var binding: FragmentRaspisanieBinding
     private lateinit var rasisanieAdapter: ArrayAdapter<String>
     private lateinit var sharedPreferences: SharedPreferences
-    private var rasp: MutableList<String> = mutableListOf("-","-","-","-","-","-","-","-","-","-")
+    private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
+    private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
+    private var currentWeekSchedule: PairsResponse? = null // Кэш расписания для текущей недели
+    private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    companion object{
+    companion object {
         private const val NAME_SEARCH = "430б"
         private const val PAIRS_FOR = "group"
         fun send(nsearch: String, pfor: String): RaspisanieFragment {
@@ -47,13 +50,11 @@ class RaspisanieFragment : Fragment() {
         }
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         rasisanieAdapter = PairsAdapter(requireContext(), R.layout.item_list)
         binding.raspisanieList.adapter = rasisanieAdapter
@@ -63,34 +64,31 @@ class RaspisanieFragment : Fragment() {
         val namesearch = arguments?.getString(NAME_SEARCH).toString()
         val pairsfor = arguments?.getString(PAIRS_FOR).toString()
         var idsearch = 0
-
         val db = databaseobj.database
-
-
-
 
         var homeName = sharedPreferences.getString("home_name", null)
         binding.btnSethome.setImageResource(
             when (homeName) {
-              namesearch -> R.drawable.baseline_home_selected
-              else -> R.drawable.baseline_home_unselected
-            })
+                namesearch -> R.drawable.baseline_home_selected
+                else -> R.drawable.baseline_home_unselected
+            }
+        )
 
         binding.pairsFor.text = when (pairsfor) {
-            "teacher" -> {formatName(namesearch) // ФИО в формат Фамилия И. О.
-            }
+            "teacher" -> formatName(namesearch)
             else -> namesearch.uppercase()
         }
 
-        val currentDate = LocalDate.now()    // Текущая дата
+        val currentDate = LocalDate.now()
         var selectedDate = currentDate
+        currentWeekStart = getWeekStartDate(selectedDate)
         val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
+        binding.textDate.text = selectedDate.format(format)
 
         binding.btnSethome.setOnClickListener {
             sharedPreferences.edit {
-                putString("home_type", pairsfor) // Тип: "group" или "teacher"
-                putString("home_name", namesearch) // Название группы или преподавателя
+                putString("home_type", pairsfor)
+                putString("home_name", namesearch)
             }
             Toast.makeText(requireContext(), "Домашняя группа/преподаватель сохранена", Toast.LENGTH_SHORT).show()
             homeName = sharedPreferences.getString("home_name", null)
@@ -102,32 +100,27 @@ class RaspisanieFragment : Fragment() {
             )
         }
 
-
-        binding.textDate.setOnClickListener {
-            showDatePicker { selectedDate ->
-                if (selectedDate != null) {
-                    // Обновляем текстовое поле с датой
-                    binding.textDate.text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-                    // Загружаем расписание для выбранной даты
-                    loadScheduleForDay(selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")), idsearch, pairsfor)
-                } else {
-                    // Пользователь отменил выбор даты
-                    Toast.makeText(requireContext(), "Выбор даты отменен", Toast.LENGTH_SHORT).show()
+        binding.textDate.setOnClickListener {   // переключение даты по календарю
+            showDatePicker { selDate ->
+                if (selDate != null) {
+                    selectedDate = selDate
+                    binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
+                    loadScheduleForWeek(selectedDate, idsearch, pairsfor)
                 }
             }
         }
 
-        binding.btnPrev.setOnClickListener {
-            selectedDate = selectedDate.minusDays(1) // Переключение на предыдущий день
-            loadScheduleForDay(selectedDate.format(format), idsearch, pairsfor)
+        binding.btnPrev.setOnClickListener {   // Пролистывание на день вперед
+            selectedDate = selectedDate.minusDays(1)
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
         }
 
-        binding.btnNext.setOnClickListener {
-            selectedDate = selectedDate.plusDays(1) // Переключение на следующий день
-            loadScheduleForDay(selectedDate.format(format), idsearch, pairsfor)
+        binding.btnNext.setOnClickListener {   // Пролистывание на день назад
+            selectedDate = selectedDate.plusDays(1)
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
         }
-
 
         viewLifecycleOwner.lifecycleScope.launch {
             withContext(Dispatchers.Main) {
@@ -137,32 +130,37 @@ class RaspisanieFragment : Fragment() {
                         "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
                         else -> 0
                     }
-                    Log.d("RaspisanieFragment", "ID search: $idsearch")
-
-                    // Загрузка расписания для текущего дня
-                    loadScheduleForDay(selectedDate.format(format), idsearch, pairsfor)
-
                 } catch (e: Exception) {
-                    rasisanieAdapter.addAll(rasp)
-                    rasisanieAdapter.notifyDataSetChanged()
-                    Log.e("RaspisanieFragment", ":err add: ${e.message}", e)
+                    Log.e("RaspisanieFragment", ":error getgr gett: ${e.message}", e)
                 }
+                loadScheduleForWeek(selectedDate, idsearch, pairsfor)
             }
         }
 
         return binding.root
     }
 
-
-
-    private fun loadScheduleForDay(date: String, idsearch: Int, pairsfor: String) {
+    /**
+     * Загрузка расписания для всей недели.
+     */
+    private fun loadScheduleForWeek(date: LocalDate, idsearch: Int, pairsfor: String) {
+        Log.d("RaspisanieFragment", (getWeekStartDate(date) == currentWeekStart &&
+                currentWeekSchedule != null).toString())
+        if (getWeekStartDate(date) == currentWeekStart &&
+            currentWeekSchedule != null
+        ) {
+            // Если данные для этой недели уже загружены, используем кэш
+            updateRaspisanie(currentWeekSchedule!!, date)
+            return
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             withContext(Dispatchers.Main) {
                 try {
-                    binding.textDate.text = date // Обновляем текст даты
-                    val newrasp = DataManager.fetchPairs(date, 0, idsearch, pairsfor)
-                    if (newrasp.result.isNotEmpty()) {
-                        updateRaspisanie(newrasp,date)
+                    currentWeekStart = getWeekStartDate(date)
+                    val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format), 1, idsearch, pairsfor) // Запрос на неделю (week = 1)
+                    if (newrasp.ok) {
+                        currentWeekSchedule = newrasp // Сохраняем данные в кэш
+                        updateRaspisanie(currentWeekSchedule!!, date)
                     } else {
                         Toast.makeText(requireContext(), R.string.scheduleerror, Toast.LENGTH_LONG).show()
                         for (i in rasp.indices) {
@@ -171,24 +169,27 @@ class RaspisanieFragment : Fragment() {
                         rasisanieAdapter.clear()
                         rasisanieAdapter.addAll(rasp)
                         rasisanieAdapter.notifyDataSetChanged()
+                        throw Exception(newrasp.error ?: "Неизвестная ошибка")
                     }
                 } catch (e: Exception) {
                     Log.e("RaspisanieFragment", "Error loading schedule: ${e.message}", e)
-                    when (e) {
-                        is java.net.UnknownHostException -> {
-                            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_LONG).show()
-                        }
-                        else -> {
-                            Toast.makeText(requireContext(), "Failed to load schedule: ${e.message}", Toast.LENGTH_LONG).show()
-                        }
-                    }
                 }
             }
         }
     }
 
-    private fun updateRaspisanie(allpairs: PairsResponse, date: String) {
-        if(!allpairs.ok){
+    /**
+     * Возвращает дату понедельника для заданной даты.
+     */
+    private fun getWeekStartDate(date: LocalDate): LocalDate {
+        return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+    }
+
+    /**
+     * Обновление расписания для конкретного дня.
+     */
+    private fun updateRaspisanie(allpairs: PairsResponse, date: LocalDate) {
+        if (!allpairs.ok) {
             Log.e("RaspisanieFragment", "no raspisania")
             return
         }
@@ -200,7 +201,7 @@ class RaspisanieFragment : Fragment() {
         val days = allpairs.result
 
         for (day in days) {
-            if (day.date == date) {
+            if (day.date == date.format(format)) {
                 day.pairs.forEach { para ->
                     rasp[para.num - 1] = para.text
                 }
@@ -211,6 +212,13 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.clear()
         rasisanieAdapter.addAll(rasp)
         rasisanieAdapter.notifyDataSetChanged()
+    }
+
+    /**
+     * Возвращает дату воскресенья для заданной даты.
+     */
+    private fun getWeekEndDate(date: LocalDate): LocalDate {
+        return date.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY))
     }
 
     private fun formatName(fullName: String): String {
@@ -225,26 +233,21 @@ class RaspisanieFragment : Fragment() {
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        // Создаем DatePickerDialog
         val datePickerDialog = DatePickerDialog(
             requireContext(),
             { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
-                // Создаем объект LocalDate из выбранной даты
                 val selectedDate = LocalDate.of(selectedYear, selectedMonth + 1, selectedDay)
-                onDateSelected(selectedDate) // Вызываем колбэк с выбранным значением
+                onDateSelected(selectedDate)
             },
             year,
             month,
             day
         )
 
-        // Устанавливаем обработчик отмены диалога
         datePickerDialog.setOnCancelListener {
-            // Если диалог был закрыт без выбора даты, вызываем колбэк с null
             onDateSelected(null)
         }
 
-        // Показываем диалог
         datePickerDialog.show()
     }
 

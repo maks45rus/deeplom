@@ -31,31 +31,6 @@ interface TeacherDao {
 }
 
 @Dao
-interface FacultyDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(faculty: Faculty)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(faculties: List<Faculty>)
-
-    @Update
-    suspend fun update(faculty: Faculty)
-
-    @Query("DELETE FROM Faculty")
-    suspend fun deleteAll()
-
-    @Query("SELECT * FROM Faculty")
-    suspend fun getAllFaculties(): List<Faculty>
-
-    @Query("SELECT * FROM Faculty WHERE id = :id")
-    suspend fun getFacultyById(id: Int): Faculty
-
-    @Query("SELECT * FROM Faculty WHERE name = :name")
-    suspend fun getFacultyByName(name: String): Faculty
-
-}
-
-@Dao
 interface GroupDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(group: Group)
@@ -78,7 +53,5 @@ interface GroupDao {
     @Query("SELECT * FROM `Group` WHERE name = :name")
     suspend fun getGroupByName(name: String): Group
 
-    @Query("SELECT * FROM `Group` WHERE facultyId = :facultyId")
-    suspend fun getGroupsByFacultyId(facultyId: Int): List<Group>
 
 }

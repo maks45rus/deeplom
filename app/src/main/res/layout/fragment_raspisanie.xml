@@ -16,12 +16,23 @@
         <TextView
             android:id="@+id/pairs_for"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
+            android:layout_height="40dp"
+            android:layout_gravity="center|top"
             android:gravity="center"
+            android:text="403"
             android:textColor="@color/top_panel_text"
-            android:text=""
             android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/text_date"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:textColor="@color/top_panel_text2"
+            android:layout_gravity="center|bottom"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:text="@string/Thursday"
+            android:textSize="12sp" />
 
         <ImageView
             android:id="@+id/btn_sethome"
@@ -33,44 +44,99 @@
 
     </FrameLayout>
 
-    <FrameLayout
-        android:id="@+id/date_layout"
+    <HorizontalScrollView
+        android:id="@+id/scroll_layout"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:orientation="horizontal"
+        android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="@color/top_panel2"
+        android:background="@color/top_panel"
         app:layout_constraintTop_toBottomOf="@+id/name_layout">
-
-        <TextView
-            android:id="@+id/text_date"
+        <LinearLayout
+            android:id="@+id/date_layout"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:textColor="@color/top_panel_text"
-            android:text=""
-            android:textSize="20sp" />
+            android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/btn_prev"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:layout_gravity="start|center_vertical"
-            android:layout_margin="10dp"
-            android:contentDescription="@string/todo"
-            android:src="@drawable/baseline_arrow_back_ios_24" />
+            <ImageView
+                android:id="@+id/btn_prev"
+                android:layout_width="70dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/baseline_arrow_back_ios_24" />
+            <TextView
+                android:id="@+id/date1"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Monday"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date2"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Tuesday"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date3"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Wednesday"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date4"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Thursday"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date5"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Friday"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date6"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Saturday"
+                android:textSize="20sp" />
 
-        <ImageView
-            android:id="@+id/btn_next"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:layout_gravity="end|center_vertical"
-            android:layout_margin="10dp"
-            android:contentDescription="@string/todo"
-            android:src="@drawable/baseline_arrow_forward_ios_24" />
-    </FrameLayout>
+            <ImageView
+                android:id="@+id/btn_next"
+                android:layout_width="70dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/baseline_arrow_forward_ios_24" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <FrameLayout
         android:layout_height="0dp"
@@ -79,7 +145,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date_layout">
+        app:layout_constraintTop_toBottomOf="@+id/scroll_layout">
 
         <ListView
             android:id="@+id/raspisanie_list"
@@ -88,6 +154,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/date_layout" />
+            app:layout_constraintTop_toBottomOf="@+id/scroll_layout" />
     </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

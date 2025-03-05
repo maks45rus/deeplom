@@ -6,11 +6,11 @@
             <objectAnimator
                 android:propertyName="scaleX"
                 android:duration="100"
-                android:valueTo="0.95" /> <!-- Уменьшение по X -->
+                android:valueTo="0.75" /> <!-- Уменьшение по X -->
             <objectAnimator
                 android:propertyName="scaleY"
                 android:duration="100"
-                android:valueTo="0.95" /> <!-- Уменьшение по Y -->
+                android:valueTo="0.75" /> <!-- Уменьшение по Y -->
         </set>
     </item>
     <!-- Состояние по умолчанию -->

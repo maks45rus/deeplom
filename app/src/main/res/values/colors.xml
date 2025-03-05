@@ -10,6 +10,7 @@
     <color name="top_panel2">#146457</color>
     <color name="top_panel_icon">#FFFFFF</color>
     <color name="top_panel_text">#FFFFFF</color>
+    <color name="top_panel_text2">#DEDEDE</color>
 
     <color name="bot_menu">#1c8b78</color>
     <color name="bot_menu_icon">#FFFFFF</color>

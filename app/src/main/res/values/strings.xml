@@ -11,4 +11,11 @@
     <string name="selectchip">Choose group or teacher</string>
     <string name="scheduleerror">No schedule for this day</string>
     <string name="todo">TODO</string>
+    <string name="Monday">ПН</string>
+    <string name="Tuesday">ВТ</string>
+    <string name="Wednesday">СР</string>
+    <string name="Thursday">ЧТ</string>
+    <string name="Friday">ПТ</string>
+    <string name="Saturday">СБ</string>
+
 </resources>

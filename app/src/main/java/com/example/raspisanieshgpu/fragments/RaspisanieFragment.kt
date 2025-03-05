@@ -24,6 +24,7 @@ import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,8 +83,8 @@ class RaspisanieFragment : Fragment() {
         val currentDate = LocalDate.now()
         var selectedDate = currentDate
         currentWeekStart = getWeekStartDate(selectedDate)
-        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        binding.textDate.text = selectedDate.format(format)
+        changedate(selectedDate)
+        updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek).toString())
 
         binding.btnSethome.setOnClickListener {
             sharedPreferences.edit {
@@ -104,22 +105,67 @@ class RaspisanieFragment : Fragment() {
             showDatePicker { selDate ->
                 if (selDate != null) {
                     selectedDate = selDate
-                    binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
+                    changedate(selectedDate) // Обновляем текст даты
                     loadScheduleForWeek(selectedDate, idsearch, pairsfor)
                 }
             }
         }
 
         binding.btnPrev.setOnClickListener {   // Пролистывание на день вперед
-            selectedDate = selectedDate.minusDays(1)
+            selectedDate = currentWeekStart!!.minusDays(2)
             loadScheduleForWeek(selectedDate, idsearch, pairsfor)
-            binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
+            updateButtonState("Sat")
+            changedate(selectedDate) // Обновляем текст даты
+        }
+
+
+        binding.date1.setOnClickListener {
+            selectedDate = currentWeekStart!! // Понедельник
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Mon") // Обновляем состояние кнопки
+            changedate(selectedDate)
+        }
+
+        binding.date2.setOnClickListener {
+            selectedDate = currentWeekStart!!.plusDays(1) // Вторник
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Tue") // Обновляем состояние кнопки
+            changedate(selectedDate)
+        }
+
+        binding.date3.setOnClickListener {
+            selectedDate = currentWeekStart!!.plusDays(2) // Среда
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Wed") // Обновляем состояние кнопки
+            changedate(selectedDate)
+        }
+
+        binding.date4.setOnClickListener {
+            selectedDate = currentWeekStart!!.plusDays(3) // Четверг
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Thu") // Обновляем состояние кнопки
+            changedate(selectedDate)
+        }
+
+        binding.date5.setOnClickListener {
+            selectedDate = currentWeekStart!!.plusDays(4) // Пятница
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Fri") // Обновляем состояние кнопки
+            changedate(selectedDate)
+        }
+
+        binding.date6.setOnClickListener {
+            selectedDate = currentWeekStart!!.plusDays(5) // Суббота
+            loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            updateButtonState("Sat") // Обновляем состояние кнопки
+            changedate(selectedDate)
         }
 
         binding.btnNext.setOnClickListener {   // Пролистывание на день назад
-            selectedDate = selectedDate.plusDays(1)
+            selectedDate = currentWeekStart!!.plusDays(7)
             loadScheduleForWeek(selectedDate, idsearch, pairsfor)
-            binding.textDate.text = selectedDate.format(format) // Обновляем текст даты
+            updateButtonState("Mon")
+            changedate(selectedDate) // Обновляем текст даты
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -140,16 +186,13 @@ class RaspisanieFragment : Fragment() {
         return binding.root
     }
 
-    /**
-     * Загрузка расписания для всей недели.
-     */
+
     private fun loadScheduleForWeek(date: LocalDate, idsearch: Int, pairsfor: String) {
         Log.d("RaspisanieFragment", (getWeekStartDate(date) == currentWeekStart &&
                 currentWeekSchedule != null).toString())
         if (getWeekStartDate(date) == currentWeekStart &&
             currentWeekSchedule != null
         ) {
-            // Если данные для этой недели уже загружены, используем кэш
             updateRaspisanie(currentWeekSchedule!!, date)
             return
         }
@@ -157,7 +200,7 @@ class RaspisanieFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 try {
                     currentWeekStart = getWeekStartDate(date)
-                    val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format), 1, idsearch, pairsfor) // Запрос на неделю (week = 1)
+                    val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format), 1, idsearch, pairsfor)
                     if (newrasp.ok) {
                         currentWeekSchedule = newrasp // Сохраняем данные в кэш
                         updateRaspisanie(currentWeekSchedule!!, date)
@@ -178,16 +221,16 @@ class RaspisanieFragment : Fragment() {
         }
     }
 
-    /**
-     * Возвращает дату понедельника для заданной даты.
-     */
+    private fun changedate(date: LocalDate) {
+        binding.textDate.text = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+
+    }
+
     private fun getWeekStartDate(date: LocalDate): LocalDate {
         return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
     }
 
-    /**
-     * Обновление расписания для конкретного дня.
-     */
+
     private fun updateRaspisanie(allpairs: PairsResponse, date: LocalDate) {
         if (!allpairs.ok) {
             Log.e("RaspisanieFragment", "no raspisania")
@@ -214,12 +257,7 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.notifyDataSetChanged()
     }
 
-    /**
-     * Возвращает дату воскресенья для заданной даты.
-     */
-    private fun getWeekEndDate(date: LocalDate): LocalDate {
-        return date.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY))
-    }
+
 
     private fun formatName(fullName: String): String {
         val parts = fullName.split(" ")
@@ -251,4 +289,32 @@ class RaspisanieFragment : Fragment() {
         datePickerDialog.show()
     }
 
+    private fun updateButtonState(selectedDay: String) {
+        // Список дней недели и соответствующих TextView
+        val daysMap = mapOf(
+            "Mon" to binding.date1,
+            "Tue" to binding.date2,
+            "Wed" to binding.date3,
+            "Thu" to binding.date4,
+            "Fri" to binding.date5,
+            "Sat" to binding.date6
+        )
+
+        // Обновляем состояние для каждого TextView
+        daysMap.forEach { (day, textView) ->
+            textView.isSelected = day == selectedDay
+        }
+    }
+
+    private fun getDayOfWeekString(dayOfWeek: DayOfWeek): String {
+        return when (dayOfWeek) {
+            DayOfWeek.MONDAY -> "Mon"
+            DayOfWeek.TUESDAY -> "Tue"
+            DayOfWeek.WEDNESDAY -> "Wed"
+            DayOfWeek.THURSDAY -> "Thu"
+            DayOfWeek.FRIDAY -> "Fri"
+            DayOfWeek.SATURDAY -> "Sat"
+            else -> "Mon" // По умолчанию (например, для воскресенья)
+        }
+    }
 }

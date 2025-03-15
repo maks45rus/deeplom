@@ -80,8 +80,10 @@ class RaspisanieFragment : Fragment() {
             else -> namesearch.uppercase()
         }
 
-        val currentDate = LocalDate.now()
-        var selectedDate = currentDate
+        var selectedDate = LocalDate.now()
+        if(selectedDate.dayOfWeek == DayOfWeek.SUNDAY){
+            selectedDate = selectedDate.plusDays(1)
+        }
         currentWeekStart = getWeekStartDate(selectedDate)
         changedate(selectedDate)
         updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek).toString())

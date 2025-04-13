@@ -1,6 +1,7 @@
 package com.example.raspisanieshgpu.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,30 +23,36 @@ class SearchFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        var check = ""
         binding = FragmentSearchBinding.inflate(inflater, container, false)
 
         acAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line)
         binding.actwList.setAdapter(acAdapter)
 
-        binding.chipHolder.setOnCheckedStateChangeListener { _, checkedIds ->
-           check = when(checkedIds.firstOrNull()){
-                R.id.chip_group -> "group"
-                R.id.chip_teacher -> "teacher"
-                else -> ""
-            }
-            updateSpinnerAdapter(check)
-        }
+        val db = databaseobj.database
+        updateSpinnerAdapter()
+
 
         binding.btnSearch.setOnClickListener {
-            val x = binding.actwList.text.toString()
-            if ((x == "") or (check == "")) {
-                Toast.makeText(requireContext(), R.string.selectchip, Toast.LENGTH_LONG).show()
-            } else {
-                val fr = RaspisanieFragment.send(x, check)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_cont, fr)
-                    .commit()
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val searchname = binding.actwList.text.toString()
+                    if ((searchname == "")) {
+                        Toast.makeText(requireContext(), R.string.selectchip, Toast.LENGTH_LONG)
+                            .show()
+                    } else {
+
+                        val checkdb = db.getGroupAndTeacherDao().isNameExists(name = searchname)
+                        if (checkdb) {
+                            val type = db.getGroupAndTeacherDao().getGroupsAndTeachersByName(searchname).type
+                            val fr = RaspisanieFragment.send(searchname, type.toString())
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.main_cont, fr)
+                                .commit()
+                        }
+                    }
+                }catch (e: Exception){
+                    Log.e("SeacrchFragment", ":error search: ${e.message}", e)
+                }
             }
         }
 
@@ -53,19 +60,19 @@ class SearchFragment: Fragment() {
 
     }
 
-    private fun updateSpinnerAdapter(type: String) {
-        val db = databaseobj.database
-        var itemlist: List<String> = mutableListOf()
-
+    private fun updateSpinnerAdapter() {
         viewLifecycleOwner.lifecycleScope.launch {
-           when(type){
-               "group" -> itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }
-               "teacher" -> itemlist = db.getTeacherDao().getAllTeachers().map { tc -> tc.name }
-           }
-        acAdapter.clear()
-        acAdapter.addAll(itemlist)
-        acAdapter.notifyDataSetChanged()
-
+            try {
+                val db = databaseobj.database
+                var itemlist: List<String> = mutableListOf()
+                itemlist =
+                    db.getGroupAndTeacherDao().getAllGroupsAndTeachers().map { item -> item.name }
+                acAdapter.clear()
+                acAdapter.addAll(itemlist)
+                acAdapter.notifyDataSetChanged()
+            }catch (e: Exception){
+                Log.e("SeacrchFragment", ":error spinneradapter: ${e.message}", e)
+            }
         }
     }
 }

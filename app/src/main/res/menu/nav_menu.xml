@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:title="@string/favorite"
-        android:icon="@drawable/baseline_star_24"
+        android:icon="@drawable/baseline_star_24_selected"
         android:id="@+id/SavedFragment"/>
 
     <item android:title="@string/main"

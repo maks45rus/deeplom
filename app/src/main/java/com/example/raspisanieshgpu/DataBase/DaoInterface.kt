@@ -6,52 +6,46 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 
-@Dao
-interface TeacherDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(teacher: Teacher)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(teachers: List<Teacher>)
-
-    @Update
-    suspend fun update(teacher: Teacher)
-
-    @Query("DELETE FROM Teacher")
-    suspend fun deleteAll()
-
-    @Query("SELECT * FROM Teacher")
-    suspend fun getAllTeachers(): List<Teacher>
-
-    @Query("SELECT * FROM Teacher WHERE id = :id")
-    suspend fun getTeacherById(id: Int): Teacher
-
-    @Query("SELECT * FROM Teacher WHERE name = :name")
-    suspend fun getTeacherByName(name: String): Teacher
-}
 
 @Dao
-interface GroupDao {
+interface GroupAndTeacherDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(group: Group)
+    suspend fun insert(nanika: GroupAndTeacher)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(groups: List<Group>)
+    suspend fun insertAll(nanika: List<GroupAndTeacher>)
 
     @Update
-    suspend fun update(group: Group)
+    suspend fun update(nanika: GroupAndTeacher)
 
-    @Query("DELETE FROM `Group`")
+    @Query("DELETE FROM GroupAndTeacher")
     suspend fun deleteAll()
 
-    @Query("SELECT * FROM `Group`")
-    suspend fun getAllGroups(): List<Group>
+    @Query("SELECT * FROM GroupAndTeacher")
+    suspend fun getAllGroupsAndTeachers(): List<GroupAndTeacher>
 
-    @Query("SELECT * FROM `Group` WHERE id = :id")
-    suspend fun getGroupById(id: Int): Group
+    @Query("SELECT * FROM GroupAndTeacher WHERE name = :name")
+    suspend fun getGroupsAndTeachersByName(name: String):GroupAndTeacher
 
-    @Query("SELECT * FROM `Group` WHERE name = :name")
-    suspend fun getGroupByName(name: String): Group
+    @Query("SELECT EXISTS(SELECT 1 FROM GroupAndTeacher WHERE name = :name COLLATE NOCASE)")
+    suspend fun isNameExists(name: String): Boolean
 
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER'")
+    suspend fun getAllTeachers(): List<GroupAndTeacher>
 
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER' AND api_id = :id")
+    suspend fun getTeacherById(id: Int): GroupAndTeacher
+
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER' AND name = :name")
+    suspend fun getTeacherByName(name: String): GroupAndTeacher
+
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP'")
+    suspend fun getAllGroups(): List<GroupAndTeacher>
+
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP' AND api_id = :id")
+    suspend fun getGroupById(id: Int): GroupAndTeacher
+
+    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP' AND name = :name")
+    suspend fun getGroupByName(name: String): GroupAndTeacher
 }
+

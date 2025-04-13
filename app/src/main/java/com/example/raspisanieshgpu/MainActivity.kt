@@ -32,8 +32,7 @@ class MainActivity : AppCompatActivity() {
 
 
         lifecycleScope.launch {
-                DataManager.fetchAndSaveTeachers()
-                DataManager.fetchAndSaveGroups()
+                DataManager.fetchAndSaveBase()
         }
 
         // Обработка кликов по кнопкам

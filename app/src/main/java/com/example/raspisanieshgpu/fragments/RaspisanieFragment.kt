@@ -59,15 +59,21 @@ class RaspisanieFragment : Fragment() {
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         rasisanieAdapter = PairsAdapter(requireContext(), R.layout.item_list)
         binding.raspisanieList.adapter = rasisanieAdapter
-
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
+        val db = databaseobj.database
         val namesearch = arguments?.getString(NAME_SEARCH).toString()
         val pairsfor = arguments?.getString(PAIRS_FOR).toString()
         var idsearch = 0
-        val db = databaseobj.database
-
         var homeName = sharedPreferences.getString("home_name", null)
+
+        binding.btnSethome.setImageResource(
+            when (homeName) {
+                namesearch -> R.drawable.baseline_home_selected
+                else -> R.drawable.baseline_home_unselected
+            }
+        )
+
         binding.btnSethome.setImageResource(
             when (homeName) {
                 namesearch -> R.drawable.baseline_home_selected
@@ -76,7 +82,7 @@ class RaspisanieFragment : Fragment() {
         )
 
         binding.pairsFor.text = when (pairsfor) {
-            "teacher" -> formatName(namesearch)
+            "TEACHER" -> formatName(namesearch)
             else -> namesearch.uppercase()
         }
 
@@ -87,6 +93,18 @@ class RaspisanieFragment : Fragment() {
         currentWeekStart = getWeekStartDate(selectedDate)
         changedate(selectedDate)
         updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek).toString())
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    idsearch = db.getGroupAndTeacherDao().getGroupsAndTeachersByName(namesearch).api_id!!
+                    Log.e("RaspisanieFragment", ":idserach:${idsearch}").toString()
+                } catch (e: Exception) {
+                    Log.e("RaspisanieFragment", ":error getgr gett: ${e.message}", e)
+                }
+                loadScheduleForWeek(selectedDate, idsearch, pairsfor)
+            }
+        }
 
         binding.btnSethome.setOnClickListener {
             sharedPreferences.edit {
@@ -170,28 +188,11 @@ class RaspisanieFragment : Fragment() {
             changedate(selectedDate) // Обновляем текст даты
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            withContext(Dispatchers.Main) {
-                try {
-                    idsearch = when (pairsfor) {
-                        "group" -> db.getGroupDao().getGroupByName(namesearch).id!!
-                        "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
-                        else -> 0
-                    }
-                } catch (e: Exception) {
-                    Log.e("RaspisanieFragment", ":error getgr gett: ${e.message}", e)
-                }
-                loadScheduleForWeek(selectedDate, idsearch, pairsfor)
-            }
-        }
-
         return binding.root
     }
 
 
     private fun loadScheduleForWeek(date: LocalDate, idsearch: Int, pairsfor: String) {
-        Log.d("RaspisanieFragment", (getWeekStartDate(date) == currentWeekStart &&
-                currentWeekSchedule != null).toString())
         if (getWeekStartDate(date) == currentWeekStart &&
             currentWeekSchedule != null
         ) {

@@ -6,11 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 
-@Database(entities = [Group::class, Teacher::class, Pairs::class], version = 1)
+@Database(entities = [GroupAndTeacher::class, Schedule::class], version = 1)
 abstract class MainDataBase: RoomDatabase() {
 
-    abstract fun getTeacherDao(): TeacherDao
-    abstract fun getGroupDao(): GroupDao
+    abstract fun getGroupAndTeacherDao(): GroupAndTeacherDao
 
     companion object{
         fun getDb(context: Context): MainDataBase{

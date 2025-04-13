@@ -47,7 +47,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:contentDescription="@string/favorite"
-                    android:src="@drawable/baseline_star_24"
+                    android:src="@drawable/baseline_star_24_selected"
                     android:scaleType="centerInside"
                     android:background="@drawable/button_state_selector"
                     android:stateListAnimator="@animator/button_scale_animator"

@@ -1,6 +1,7 @@
 package com.example.raspisanieshgpu
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.databaseobj
@@ -32,14 +33,25 @@ class MainActivity : AppCompatActivity() {
 
 
         lifecycleScope.launch {
-                DataManager.fetchAndSaveBase()
+
+            try {
+                // Обновляем группы с сохранением избранных
+                DataManager.refreshGroups()
+
+                // Обновляем преподавателей с сохранением избранных
+                DataManager.refreshTeachers()
+
+                // Логируем успешное обновление
+                Log.d("DataUpdate", "Данные успешно обновлены с сохранением избранного")
+
+
+            } catch (e: Exception) {
+                Log.e("DataUpdate", "Ошибка при обновлении данных: ${e.message}", e)
+            }
         }
 
         // Обработка кликов по кнопкам
-        binding.btnHome.setOnClickListener {
-            loadFragment(homeFragment)
-            updateButtonState(R.id.btnHome)
-        }
+
         binding.btnSearch.setOnClickListener {
             loadFragment(searchFragment)
             updateButtonState(R.id.btnSearch)
@@ -50,8 +62,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            loadFragment(homeFragment)
-            updateButtonState(R.id.btnHome)
+            loadFragment(savedFragment)
+            updateButtonState(R.id.btnSaved)
         }
     }
 
@@ -63,7 +75,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonState(selectedButtonId: Int) {
-        binding.btnHome.isSelected = selectedButtonId == R.id.btnHome
         binding.btnSearch.isSelected = selectedButtonId == R.id.btnSearch
         binding.btnSaved.isSelected = selectedButtonId == R.id.btnSaved
     }

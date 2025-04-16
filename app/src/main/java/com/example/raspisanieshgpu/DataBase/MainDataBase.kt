@@ -6,18 +6,24 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 
-@Database(entities = [GroupAndTeacher::class, Schedule::class], version = 1)
+@Database(entities = [Teacher::class, Group::class], version = 1)
 abstract class MainDataBase: RoomDatabase() {
 
-    abstract fun getGroupAndTeacherDao(): GroupAndTeacherDao
+    abstract fun getGroupDao(): GroupDao
+    abstract fun getTeacherDao(): TeacherDao
 
-    companion object{
-        fun getDb(context: Context): MainDataBase{
+    companion object {
+        fun getDb(context: Context): MainDataBase {
+            // Удаляем файл БД перед созданием (для разработки)
+            context.deleteDatabase("RaspisanieDB")
+
             return Room.databaseBuilder(
                 context.applicationContext,
                 MainDataBase::class.java,
                 "RaspisanieDB"
-            ).build()
+            )
+                .allowMainThreadQueries()
+                .build()
         }
     }
 

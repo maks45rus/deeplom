@@ -8,44 +8,71 @@ import androidx.room.Update
 
 
 @Dao
-interface GroupAndTeacherDao {
+interface TeacherDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(nanika: GroupAndTeacher)
+    suspend fun insert(teacher: Teacher)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(nanika: List<GroupAndTeacher>)
+    suspend fun insertAll(teachers: List<Teacher>)
 
-    @Update
-    suspend fun update(nanika: GroupAndTeacher)
+    @Query("DELETE FROM Teacher WHERE isFavorite = 0")
+    suspend fun deleteNonFavorites()
 
-    @Query("DELETE FROM GroupAndTeacher")
+    @Query("UPDATE Teacher SET id = :newId WHERE name = :name AND isFavorite = 1")
+    suspend fun updateIdForFavorite(name: String, newId: Int)
+
+    @Query("SELECT * FROM Teacher WHERE isFavorite = 1")
+    suspend fun getFavorites(): List<Teacher>
+
+    @Query("DELETE FROM Teacher")
     suspend fun deleteAll()
 
-    @Query("SELECT * FROM GroupAndTeacher")
-    suspend fun getAllGroupsAndTeachers(): List<GroupAndTeacher>
+    @Query("SELECT * FROM Teacher")
+    suspend fun getAllTeachers(): List<Teacher>
 
-    @Query("SELECT * FROM GroupAndTeacher WHERE name = :name")
-    suspend fun getGroupsAndTeachersByName(name: String):GroupAndTeacher
+    @Query("SELECT * FROM Teacher WHERE id = :id")
+    suspend fun getTeacherById(id: Int): Teacher
 
-    @Query("SELECT EXISTS(SELECT 1 FROM GroupAndTeacher WHERE name = :name COLLATE NOCASE)")
-    suspend fun isNameExists(name: String): Boolean
+    @Query("SELECT * FROM Teacher WHERE name = :name")
+    suspend fun getTeacherByName(name: String): Teacher
 
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER'")
-    suspend fun getAllTeachers(): List<GroupAndTeacher>
-
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER' AND api_id = :id")
-    suspend fun getTeacherById(id: Int): GroupAndTeacher
-
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'TEACHER' AND name = :name")
-    suspend fun getTeacherByName(name: String): GroupAndTeacher
-
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP'")
-    suspend fun getAllGroups(): List<GroupAndTeacher>
-
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP' AND api_id = :id")
-    suspend fun getGroupById(id: Int): GroupAndTeacher
-
-    @Query("SELECT * FROM GroupAndTeacher WHERE type = 'GROUP' AND name = :name")
-    suspend fun getGroupByName(name: String): GroupAndTeacher
+    @Query("UPDATE Teacher SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
 }
+
+@Dao
+interface GroupDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(group: Group)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(groups: List<Group>)
+
+    @Query("DELETE FROM `Group` WHERE isFavorite = 0")
+    suspend fun deleteNonFavorites()
+
+    // Обновляет ID группы по имени (для избранных)
+    @Query("UPDATE `Group` SET id = :newId WHERE name = :name AND isFavorite = 1")
+    suspend fun updateIdForFavorite(name: String, newId: Int)
+
+    // Получает избранные группы
+    @Query("SELECT * FROM `Group` WHERE isFavorite = 1")
+    suspend fun getFavorites(): List<Group>
+
+    @Query("DELETE FROM `Group`")
+    suspend fun deleteAll()
+
+    @Query("SELECT * FROM `Group`")
+    suspend fun getAllGroups(): List<Group>
+
+    @Query("SELECT * FROM `Group` WHERE id = :id")
+    suspend fun getGroupById(id: Int): Group
+
+    @Query("SELECT * FROM `Group` WHERE name = :name")
+    suspend fun getGroupByName(name: String): Group
+
+    @Query("UPDATE `Group` SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
+}
+
 

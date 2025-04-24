@@ -33,6 +33,7 @@ class RaspisanieFragment : Fragment() {
     private lateinit var binding: FragmentRaspisanieBinding
     private lateinit var rasisanieAdapter: ArrayAdapter<String>
     private lateinit var sharedPreferences: SharedPreferences
+    private var isFavorite = false
     private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
     private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
     private var currentWeekSchedule: PairsResponse? = null // Кэш расписания для текущей недели
@@ -74,6 +75,41 @@ class RaspisanieFragment : Fragment() {
             else -> namesearch.uppercase()
         }
 
+
+        // Обработчик клика по кнопке избранного
+        binding.btnFavorite.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                isFavorite = !isFavorite
+                updateFavoriteButton()
+                when(pairsfor) {
+                    "group" -> {
+                        val group = databaseobj.database.getGroupDao().getGroupByName(namesearch)
+                        databaseobj.database.getGroupDao().setFavoriteStatus(group.id, isFavorite)
+
+                        // Сохраняем как домашнее расписание, если это первое избранное
+                        if (isFavorite && sharedPreferences.getString("home_name", null) == null) {
+                            sharedPreferences.edit {
+                                putString("home_name", namesearch)
+                                putString("home_type", pairsfor)
+                            }
+                        }
+                    }
+                    "teacher" -> {
+                        val teacher = databaseobj.database.getTeacherDao().getTeacherByName(namesearch)
+                        databaseobj.database.getTeacherDao().setFavoriteStatus(teacher.id, isFavorite)
+
+                        if (isFavorite && sharedPreferences.getString("home_name", null) == null) {
+                            sharedPreferences.edit {
+                                putString("home_name", namesearch)
+                                putString("home_type", pairsfor)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
         var selectedDate = LocalDate.now()
         if(selectedDate.dayOfWeek == DayOfWeek.SUNDAY){
             selectedDate = selectedDate.plusDays(1)
@@ -82,16 +118,24 @@ class RaspisanieFragment : Fragment() {
         changedate(selectedDate)
         updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek).toString())
 
-        viewLifecycleOwner.lifecycleScope.launch {
+
+        viewLifecycleOwner.lifecycleScope.launch {  //
             withContext(Dispatchers.Main) {
                 try {
                     idsearch = when (pairsfor) {
-                        "group" -> db.getGroupDao().getGroupByName(namesearch).id!!
-                        "teacher" -> db.getTeacherDao().getTeacherByName(namesearch).id!!
+                        "group" -> {
+                            isFavorite = databaseobj.database.getGroupDao().getGroupByName(namesearch).isFavorite
+                            db.getGroupDao().getGroupByName(namesearch).id!!
+                        }
+                        "teacher" -> {
+                            isFavorite = databaseobj.database.getTeacherDao().getTeacherByName(namesearch).isFavorite
+                            db.getTeacherDao().getTeacherByName(namesearch).id!!
+                        }
                         else -> 0
                     }
+                    updateFavoriteButton()
                 } catch (e: Exception) {
-                    Log.e("RaspisanieFragment", ":error getgr gett: ${e.message}", e)
+                    Log.e("RaspisanieFragment", "error: ${e.message}", e)
                 }
                 loadScheduleForWeek(selectedDate, idsearch, pairsfor)
             }
@@ -285,6 +329,13 @@ class RaspisanieFragment : Fragment() {
         daysMap.forEach { (day, textView) ->
             textView.isSelected = day == selectedDay
         }
+    }
+
+    private fun updateFavoriteButton() {
+        binding.btnFavorite.setImageResource(
+            if (isFavorite) R.drawable.baseline_star_24_selected
+            else R.drawable.baseline_star_24_unselected
+        )
     }
 
     private fun getDayOfWeekString(dayOfWeek: DayOfWeek): String {

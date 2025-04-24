@@ -42,6 +42,15 @@
             android:text="@string/Thursday"
             android:textSize="12sp" />
 
+        <ImageView
+            android:id="@+id/btn_home"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_margin="10dp"
+            android:src="@drawable/baseline_home_unselected"
+            android:contentDescription="@string/todo" />
+
     </FrameLayout>
 
     <LinearLayout

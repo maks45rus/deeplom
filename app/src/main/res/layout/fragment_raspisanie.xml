@@ -43,7 +43,7 @@
             android:textSize="12sp" />
 
         <ImageView
-            android:id="@+id/btn_home"
+            android:id="@+id/btn_sethome"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="end|center_vertical"

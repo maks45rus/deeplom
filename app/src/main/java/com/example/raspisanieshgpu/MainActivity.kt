@@ -1,5 +1,7 @@
 package com.example.raspisanieshgpu
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -21,15 +23,14 @@ class MainActivity : AppCompatActivity() {
     private val homeFragment = HomeFragment()
     private val savedFragment = SavedFragment()
     private val searchFragment = SearchFragment()
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         databaseobj.initialize(this)
-
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
 
         lifecycleScope.launch {
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_cont, fragment)
+            .addToBackStack(null)
             .commit()
     }
 

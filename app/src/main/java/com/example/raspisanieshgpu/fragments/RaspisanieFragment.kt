@@ -68,10 +68,15 @@ class RaspisanieFragment : Fragment() {
         var idsearch = 0
         var homeName = sharedPreferences.getString("home_name", null)
 
-
+        binding.btnSethome.setImageResource(
+            when (homeName) {
+                namesearch -> R.drawable.baseline_home_selected
+                else -> R.drawable.baseline_home_unselected
+            }
+        )
 
         binding.pairsFor.text = when (pairsfor) {
-            "TEACHER" -> formatName(namesearch)
+            "teacher" -> formatName(namesearch)
             else -> namesearch.uppercase()
         }
 
@@ -141,7 +146,20 @@ class RaspisanieFragment : Fragment() {
             }
         }
 
-
+        binding.btnSethome.setOnClickListener {
+            sharedPreferences.edit {
+                putString("home_type", pairsfor)
+                putString("home_name", namesearch)
+            }
+            Toast.makeText(requireContext(), "Домашняя группа/преподаватель сохранена", Toast.LENGTH_SHORT).show()
+            homeName = sharedPreferences.getString("home_name", null)
+            binding.btnSethome.setImageResource(
+                when (homeName) {
+                    namesearch -> R.drawable.baseline_home_selected
+                    else -> R.drawable.baseline_home_unselected
+                }
+            )
+        }
 
         binding.textDate.setOnClickListener {   // переключение даты по календарю
             showDatePicker { selDate ->

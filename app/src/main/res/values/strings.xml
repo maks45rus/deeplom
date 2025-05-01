@@ -17,5 +17,6 @@
     <string name="Thursday">ЧТ</string>
     <string name="Friday">ПТ</string>
     <string name="Saturday">СБ</string>
+    <string name="no_class">no class</string>
 
 </resources>

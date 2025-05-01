@@ -12,9 +12,11 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
@@ -58,8 +60,6 @@ class RaspisanieFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
-        rasisanieAdapter = PairsAdapter(requireContext(), R.layout.item_list)
-        binding.raspisanieList.adapter = rasisanieAdapter
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
         val db = databaseobj.database
@@ -67,6 +67,11 @@ class RaspisanieFragment : Fragment() {
         val pairsfor = arguments?.getString(PAIRS_FOR).toString()
         var idsearch = 0
         var homeName = sharedPreferences.getString("home_name", null)
+
+        rasisanieAdapter = PairsAdapter(requireContext())
+        binding.raspisanieList.apply {
+            adapter = rasisanieAdapter
+        }
 
         binding.btnSethome.setImageResource(
             when (homeName) {
@@ -280,16 +285,18 @@ class RaspisanieFragment : Fragment() {
             return
         }
 
-        for (i in rasp.indices) {
-            rasp[i] = "-"
-        }
+        // Очищаем только 5 пар
+        rasp = MutableList(5) { "-" }
 
         val days = allpairs.result
 
         for (day in days) {
             if (day.date == date.format(format)) {
                 day.pairs.forEach { para ->
-                    rasp[para.num - 1] = para.text
+                    // Убедимся, что номер пары не превышает 5
+                    if (para.num - 1 < 5) {
+                        rasp[para.num - 1] = para.text
+                    }
                 }
                 break
             }

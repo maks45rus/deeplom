@@ -15,4 +15,8 @@
     <color name="bot_menu">#1c8b78</color>
     <color name="bot_menu_icon">#FFFFFF</color>
 
+    <color name="divider_color">#E0E0E0</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+
 </resources>

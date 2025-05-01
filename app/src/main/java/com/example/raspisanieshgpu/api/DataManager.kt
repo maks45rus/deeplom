@@ -53,7 +53,10 @@ object DataManager {
     suspend fun refreshGroups() {
         withContext(Dispatchers.IO) {
             try {
-                // 1. Загружаем группы с сервера
+                // 1. Сохраняем имена всех текущих фаворитов
+                val favoriteGroupNames = db.getGroupDao().getFavorites().map { it.name }
+
+                // 2. Загружаем свежие данные с сервера
                 val response = apiService.getGroups()
                 if (!response.ok) throw Exception(response.error)
 
@@ -61,26 +64,24 @@ object DataManager {
                     faculty.groups.map { Group(id = it.id, name = it.name, isFavorite = false) }
                 }
 
-                // 2. Получаем текущие избранные группы из БД
-                val favoriteGroups = db.getGroupDao().getFavorites()
+                // 3. Полностью очищаем базу
+                db.getGroupDao().deleteAll()
 
-                // 3. Удаляем все группы, кроме избранных
-                db.getGroupDao().deleteNonFavorites()
+                // 4. Добавляем все новые группы
+                db.getGroupDao().insertAll(serverGroups)
 
-                // 4. Для избранных групп обновляем ID по имени
-                favoriteGroups.forEach { favorite ->
-                    val serverGroup = serverGroups.find { it.name == favorite.name }
-                    if (serverGroup != null) {
-                        db.getGroupDao().updateIdForFavorite(favorite.name, serverGroup.id)
+                // 5. Восстанавливаем статус фаворитов
+                favoriteGroupNames.forEach { name ->
+                    val group = db.getGroupDao().getGroupByName(name)
+                    if (group != null) {
+                        db.getGroupDao().setFavoriteStatus(group.id, true)
                     }
                 }
 
-                // 5. Добавляем все группы с сервера (IGNORE конфликты для избранных)
-                db.getGroupDao().insertAll(serverGroups)
-
-                Log.d("DataManager", "Groups refreshed (favorites preserved)")
+                Log.d("DataManager", "Groups refreshed with favorites restored")
             } catch (e: Exception) {
                 Log.e("DataManager", "Error refreshing groups: ${e.message}", e)
+                throw e // Пробрасываем исключение для обработки выше
             }
         }
     }
@@ -88,7 +89,10 @@ object DataManager {
     suspend fun refreshTeachers() {
         withContext(Dispatchers.IO) {
             try {
-                // 1. Загружаем преподавателей с сервера
+                // 1. Сохраняем имена всех текущих фаворитов
+                val favoriteTeacherNames = db.getTeacherDao().getFavorites().map { it.name }
+
+                // 2. Загружаем свежие данные с сервера
                 val response = apiService.getTeachers()
                 if (!response.ok) throw Exception(response.error)
 
@@ -96,26 +100,24 @@ object DataManager {
                     Teacher(id = it.id, name = it.name, isFavorite = false)
                 }
 
-                // 2. Получаем текущих избранных преподавателей из БД
-                val favoriteTeachers = db.getTeacherDao().getFavorites()
+                // 3. Полностью очищаем базу
+                db.getTeacherDao().deleteAll()
 
-                // 3. Удаляем всех преподавателей, кроме избранных
-                db.getTeacherDao().deleteNonFavorites()
+                // 4. Добавляем всех преподавателей
+                db.getTeacherDao().insertAll(serverTeachers)
 
-                // 4. Для избранных преподавателей обновляем ID по имени
-                favoriteTeachers.forEach { favorite ->
-                    val serverTeacher = serverTeachers.find { it.name == favorite.name }
-                    if (serverTeacher != null) {
-                        db.getTeacherDao().updateIdForFavorite(favorite.name, serverTeacher.id!!)
+                // 5. Восстанавливаем статус фаворитов
+                favoriteTeacherNames.forEach { name ->
+                    val teacher = db.getTeacherDao().getTeacherByName(name)
+                    if (teacher != null) {
+                        db.getTeacherDao().setFavoriteStatus(teacher.id, true)
                     }
                 }
 
-                // 5. Добавляем всех преподавателей с сервера
-                db.getTeacherDao().insertAll(serverTeachers)
-
-                Log.d("DataManager", "Teachers refreshed (favorites preserved)")
+                Log.d("DataManager", "Teachers refreshed with favorites restored")
             } catch (e: Exception) {
                 Log.e("DataManager", "Error refreshing teachers: ${e.message}", e)
+                throw e
             }
         }
     }

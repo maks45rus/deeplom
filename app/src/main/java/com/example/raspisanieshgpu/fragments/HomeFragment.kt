@@ -27,15 +27,11 @@ class HomeFragment : Fragment() {
 
         val homeName = sharedPreferences.getString("home_name", null)
         val homeType = sharedPreferences.getString("home_type", null)
-        if (homeName==null || homeType==null) {
-            binding.homeText.text = "Задайте стартовое расписание"
-        } else {
-            val fr = RaspisanieFragment.send(homeName.toString(), homeType.toString())
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.main_cont, fr)
-                .commit()
-        }
 
+        val fr = RaspisanieFragment.send(homeName.toString(), homeType.toString())
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.main_cont, fr)
+            .commit()
 
         return binding.root
     }

@@ -3,19 +3,24 @@ package com.example.raspisanieshgpu.fragments
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseExpandableListAdapter
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.databaseobj
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import androidx.fragment.app.Fragment
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentSavedBinding
+import com.example.raspisanieshgpu.databinding.ItemFavoriteBinding
+import com.example.raspisanieshgpu.databinding.ItemGroupHeaderBinding
 import kotlinx.coroutines.launch
 
-class SavedFragment: Fragment() {
+class SavedFragment : Fragment() {
 
     private lateinit var binding: FragmentSavedBinding
-    private lateinit var adapter: ArrayAdapter<String>
+    private val groupsList = mutableListOf<String>()
+    private val teachersList = mutableListOf<String>()
+    private val headers = listOf("Группы", "Преподаватели")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,58 +28,100 @@ class SavedFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSavedBinding.inflate(inflater, container, false)
-
-        // Настройка списка
-        adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1)
-        binding.savedList.adapter = adapter
-
-        // Загрузка данных
+        setupExpandableListView()
         loadFavorites()
-
-        // Обработчик клика по элементу списка
-        binding.savedList.setOnItemClickListener { _, _, position, _ ->
-            val item = adapter.getItem(position) ?: return@setOnItemClickListener
-            openFavoriteSchedule(item)
-        }
-
         return binding.root
+    }
+
+    private fun setupExpandableListView() {
+
+        binding.expandableListView.setAdapter(object : BaseExpandableListAdapter() {
+            override fun getGroupCount(): Int = headers.size
+            override fun getChildrenCount(groupPosition: Int): Int = when (groupPosition) {
+                0 -> groupsList.size
+                1 -> teachersList.size
+                else -> 0
+            }
+
+            override fun getGroup(groupPosition: Int): Any = headers[groupPosition]
+            override fun getChild(groupPosition: Int, childPosition: Int): Any = when (groupPosition) {
+                0 -> groupsList[childPosition]
+                1 -> teachersList[childPosition]
+                else -> ""
+            }
+
+            override fun getGroupId(groupPosition: Int): Long = groupPosition.toLong()
+            override fun getChildId(groupPosition: Int, childPosition: Int): Long = childPosition.toLong()
+            override fun hasStableIds(): Boolean = true
+
+            override fun getGroupView(
+                groupPosition: Int,
+                isExpanded: Boolean,
+                convertView: View?,
+                parent: ViewGroup
+            ): View {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = ItemGroupHeaderBinding.inflate(inflater, parent, false)
+                binding.headerText.text = headers[groupPosition]
+                return binding.root
+            }
+
+            override fun getChildView(
+                groupPosition: Int,
+                childPosition: Int,
+                isLastChild: Boolean,
+                convertView: View?,
+                parent: ViewGroup
+            ): View {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = ItemFavoriteBinding.inflate(inflater, parent, false)
+                binding.itemText.text = when (groupPosition) {
+                    0 -> groupsList[childPosition]
+                    1 -> teachersList[childPosition]
+                    else -> ""
+                }
+                return binding.root
+            }
+
+            override fun isChildSelectable(groupPosition: Int, childPosition: Int): Boolean {
+                return true // Все элементы можно выбирать
+            }
+        })
+
+        binding.expandableListView.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
+            val type = if (groupPosition == 0) "group" else "teacher"
+            val name = when (groupPosition) {
+                0 -> groupsList[childPosition]
+                1 -> teachersList[childPosition]
+                else -> ""
+            }
+            openFavoriteSchedule(name, type)
+            true
+        }
     }
 
     private fun loadFavorites() {
         viewLifecycleOwner.lifecycleScope.launch {
-            // Получаем избранные группы и преподавателей
-            val favoriteGroups = databaseobj.database.getGroupDao().getFavorites()
-            val favoriteTeachers = databaseobj.database.getTeacherDao().getFavorites()
+            groupsList.clear()
+            teachersList.clear()
 
-            // Объединяем и сортируем
-            val allFavorites = (favoriteGroups.map { it.name to "group" } +
-                    favoriteTeachers.map { it.name to "teacher" })
-                .sortedBy { it.first }
+            groupsList.addAll(databaseobj.database.getGroupDao().getFavorites().map { it.name })
+            teachersList.addAll(databaseobj.database.getTeacherDao().getFavorites().map { it.name })
 
-            // Обновляем адаптер
-            adapter.clear()
-            adapter.addAll(allFavorites.map { "${it.first} (${if (it.second == "group") "Группа" else "Преподаватель"})" })
-            adapter.notifyDataSetChanged()
+            (binding.expandableListView.expandableListAdapter as BaseExpandableListAdapter).notifyDataSetChanged()
+
+            // Раскрываем все группы по умолчанию
+            for (i in headers.indices) {
+                binding.expandableListView.expandGroup(i)
+            }
         }
     }
 
-    private fun openFavoriteSchedule(fullItemName: String) {
-        val regex = """(.+)\s\((Группа|Преподаватель)\)""".toRegex()
-        val matchResult = regex.find(fullItemName) ?: return
-
-        val name = matchResult.groupValues[1]
-        val type = when(matchResult.groupValues[2]) {
-            "Группа" -> "group"
-            "Преподаватель" -> "teacher"
-            else -> return
-        }
-
+    private fun openFavoriteSchedule(name: String, type: String) {
         val fr = RaspisanieFragment.send(name, type)
         parentFragmentManager.beginTransaction()
             .replace(R.id.main_cont, fr)
             .addToBackStack(null)
             .commit()
     }
-
-
 }

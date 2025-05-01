@@ -15,7 +15,7 @@ abstract class MainDataBase: RoomDatabase() {
     companion object {
         fun getDb(context: Context): MainDataBase {
             // Удаляем файл БД перед созданием (для разработки)
-            context.deleteDatabase("RaspisanieDB")
+            // context.deleteDatabase("RaspisanieDB")
 
             return Room.databaseBuilder(
                 context.applicationContext,

@@ -20,5 +20,8 @@
     <string name="no_class">no class</string>
     <string name="groups_header">Группы</string>
     <string name="teachers_header">Преподаватели</string>
+    <string name="error_schedule">Не получилось загрузить расписание :(</string>
+    <string name="group_not_found">Группа не найдена</string>
+    <string name="teacher_not_found">Преподаватель не найден</string>
 
 </resources>

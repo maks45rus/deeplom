@@ -1,6 +1,5 @@
 package com.example.raspisanieshgpu
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -64,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            loadFragment(savedFragment)
+            loadFragment(homeFragment)
             updateButtonState(R.id.btnSaved)
         }
     }

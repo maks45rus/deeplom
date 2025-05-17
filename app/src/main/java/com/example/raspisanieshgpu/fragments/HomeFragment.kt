@@ -1,10 +1,10 @@
 package com.example.raspisanieshgpu.fragments
 
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +16,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
     private lateinit var sharedPreferences: SharedPreferences
+    private val savedFragment = SavedFragment()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,11 +29,19 @@ class HomeFragment : Fragment() {
         val homeName = sharedPreferences.getString("home_name", null)
         val homeType = sharedPreferences.getString("home_type", null)
 
-        val fr = RaspisanieFragment.send(homeName.toString(), homeType.toString())
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.main_cont, fr)
-            .commit()
+        if (homeName=="" || homeType=="") {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_cont, savedFragment)
+                .commit()
+        } else {
+            val fr = RaspisanieFragment.send(homeName.toString(), homeType.toString())
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.main_cont, fr)
+                .commit()
+        }
+
 
         return binding.root
     }
+
 }

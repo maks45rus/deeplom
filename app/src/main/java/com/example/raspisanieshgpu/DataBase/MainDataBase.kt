@@ -15,16 +15,26 @@ abstract class MainDataBase: RoomDatabase() {
 
     companion object {
         fun getDb(context: Context): MainDataBase {
-            // Удаляем файл БД перед созданием (для разработки)
-            //context.deleteDatabase("RaspisanieDB")
-
-            return Room.databaseBuilder(
-                context.applicationContext,
-                MainDataBase::class.java,
-                "RaspisanieDB"
-            )
-                .allowMainThreadQueries()
-                .build()
+            return try {
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    MainDataBase::class.java,
+                    "RaspisanieDB"
+                )
+                    .allowMainThreadQueries()
+                    .build()
+            } catch (e: IllegalStateException) {
+                // Если произошла ошибка (например, миграция не выполнена)
+                context.deleteDatabase("RaspisanieDB")
+                // Повторяем попытку создания базы
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    MainDataBase::class.java,
+                    "RaspisanieDB"
+                )
+                    .allowMainThreadQueries()
+                    .build()
+            }
         }
     }
 

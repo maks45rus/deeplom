@@ -43,19 +43,53 @@ class SearchFragment: Fragment() {
 
 
         binding.btnSearch.setOnClickListener {
-            val x = binding.actwList.text.toString()
-            if ((x == "") or (check == "")) {
+            val x = binding.actwList.text.toString().trim()
+            if (x.isEmpty() || check.isEmpty()) {
                 Toast.makeText(requireContext(), R.string.selectchip, Toast.LENGTH_LONG).show()
             } else {
-                val fr = RaspisanieFragment.send(x, check)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_cont, fr)
-                    .commit()
+                checkAndOpenSchedule(x, check)
             }
         }
 
         return binding.root
 
+    }
+
+    private fun checkAndOpenSchedule(name: String, type: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val exists = when (type) {
+                    "group" -> databaseobj.database.getGroupDao().getGroupByName(name) != null
+                    "teacher" -> databaseobj.database.getTeacherDao().getTeacherByName(name) != null
+                    else -> false
+                }
+
+                if (exists) {
+                    openScheduleFragment(name, type)
+                } else {
+                    showNotFoundError(type)
+                }
+            } catch (e: Exception) {
+                Log.e("SearchFragment", "error", e)
+            }
+        }
+    }
+
+    private fun showNotFoundError(type: String) {
+        val errorMsg = when (type) {
+            "group" -> getString(R.string.group_not_found)
+            "teacher" -> getString(R.string.teacher_not_found)
+            else -> getString(R.string.group_not_found)
+        }
+        Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
+    }
+
+    private fun openScheduleFragment(name: String, type: String) {
+        val fr = RaspisanieFragment.send(name, type)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.main_cont, fr)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun updateSpinnerAdapter(type: String) {

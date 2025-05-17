@@ -2,8 +2,8 @@ package com.example.raspisanieshgpu.api.models
 
 data class PairsResponse(
     val ok: Boolean,
-    val error: String,
-    val result: List<Date>
+    val error: String? = null,
+    val result: List<Date>? = null
 )
 
 data class Date(

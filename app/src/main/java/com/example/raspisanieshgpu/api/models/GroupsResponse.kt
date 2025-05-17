@@ -2,8 +2,8 @@ package com.example.raspisanieshgpu.api.models
 
 data class GroupsResponse(
     val ok: Boolean,
-    val error: String,
-    val result: List<Faculty>
+    val error: String? = null,
+    val result: List<Faculty>? = null
 )
 
 data class Faculty(

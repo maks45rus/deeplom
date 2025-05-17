@@ -24,3 +24,12 @@ data class Group (
     var isFavorite: Boolean = false
 
 )
+
+@Entity(tableName = "CachedSchedule")
+data class CachedSchedule(
+    @PrimaryKey
+    val entityId: Int, // ID группы или преподавателя
+    val entityType: String, // "group" или "teacher"
+    val weekStartDate: String, // Дата начала недели в формате yyyy-MM-dd
+    val scheduleData: String // JSON с данными расписания
+)

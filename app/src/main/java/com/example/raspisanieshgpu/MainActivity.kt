@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             loadFragment(searchFragment)
             updateButtonState(R.id.btnSearch)
         }
+
         binding.btnSaved.setOnClickListener {
             loadFragment(savedFragment)
             updateButtonState(R.id.btnSaved)

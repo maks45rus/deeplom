@@ -20,7 +20,7 @@ class SavedFragment : Fragment() {
     private lateinit var binding: FragmentSavedBinding
     private val groupsList = mutableListOf<String>()
     private val teachersList = mutableListOf<String>()
-    private val headers = listOf("Группы", "Преподаватели")
+    private lateinit var headers: List<String>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,6 +28,10 @@ class SavedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSavedBinding.inflate(inflater, container, false)
+        headers = listOf(
+            getString(R.string.groups_header),
+            getString(R.string.teachers_header)
+        )
         setupExpandableListView()
         loadFavorites()
         return binding.root

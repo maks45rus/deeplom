@@ -17,12 +17,14 @@ import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
+import com.example.raspisanieshgpu.DataBase.CachedSchedule
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
 import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -238,9 +240,9 @@ class RaspisanieFragment : Fragment() {
 
 
     private fun loadScheduleForWeek(date: LocalDate, idsearch: Int, pairsfor: String) {
-        if (getWeekStartDate(date) == currentWeekStart &&
-            currentWeekSchedule != null
-        ) {
+        val weekStart = getWeekStartDate(date)
+
+        if (weekStart == currentWeekStart && currentWeekSchedule != null) {
             updateRaspisanie(currentWeekSchedule!!, date)
             return
         }
@@ -248,25 +250,66 @@ class RaspisanieFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 try {
                     currentWeekStart = getWeekStartDate(date)
-                    val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format), 1, idsearch, pairsfor)
+                    val newrasp = DataManager.fetchPairs(weekStart.format(format), 1, idsearch, pairsfor)
                     if (newrasp.ok) {
-                        currentWeekSchedule = newrasp // Сохраняем данные в кэш
+                        currentWeekSchedule = newrasp
                         updateRaspisanie(currentWeekSchedule!!, date)
-                    } else {
-                        Toast.makeText(requireContext(), R.string.scheduleerror, Toast.LENGTH_LONG).show()
-                        for (i in rasp.indices) {
-                            rasp[i] = "-"
+                        if (isFavoriteItem(idsearch, pairsfor)) { // Сохраняем данные в бд
+                            val scheduleJson = convertScheduleToJson(newrasp)
+                            val cachedSchedule = CachedSchedule(
+                                entityId = idsearch,
+                                entityType = pairsfor,
+                                weekStartDate = weekStart.format(format),
+                                scheduleData = scheduleJson
+                            )
+                            databaseobj.database.getCachedScheduleDao().insertOrUpdate(cachedSchedule)
+                            Log.d("RaspisanieFragment", "cached")
                         }
-                        rasisanieAdapter.clear()
-                        rasisanieAdapter.addAll(rasp)
-                        rasisanieAdapter.notifyDataSetChanged()
-                        throw Exception(newrasp.error ?: "Неизвестная ошибка")
+                    } else {
+                        if (isFavoriteItem(idsearch, pairsfor)) {
+                            val cached = databaseobj.database.getCachedScheduleDao()
+                                .getSchedule(idsearch, pairsfor, weekStart.format(format))
+
+                            cached?.let {
+                                val cachedSchedule = parseCachedSchedule(it.scheduleData)
+                                currentWeekSchedule = cachedSchedule
+                                currentWeekStart = weekStart
+                                updateRaspisanie(cachedSchedule, date)
+                            }
+                        }else {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.scheduleerror,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            for (i in rasp.indices) {
+                                rasp[i] = "-"
+                            }
+                            rasisanieAdapter.clear()
+                            rasisanieAdapter.addAll(rasp)
+                            rasisanieAdapter.notifyDataSetChanged()
+                            throw Exception(newrasp.error ?: "Неизвестная ошибка")
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e("RaspisanieFragment", "Error loading schedule: ${e.message}", e)
                 }
             }
         }
+    }
+
+    private suspend fun isFavoriteItem(id: Int, type: String): Boolean {
+        return when (type) {
+            "group" -> databaseobj.database.getGroupDao().getGroupById(id)?.isFavorite ?: false
+            "teacher" -> databaseobj.database.getTeacherDao().getTeacherById(id)?.isFavorite ?: false
+            else -> false
+        }
+    }
+    private fun convertScheduleToJson(schedule: PairsResponse): String {
+        return Gson().toJson(schedule)
+    }
+    private fun parseCachedSchedule(json: String): PairsResponse {
+        return Gson().fromJson(json, PairsResponse::class.java)
     }
 
     private fun changedate(date: LocalDate) {
@@ -290,7 +333,7 @@ class RaspisanieFragment : Fragment() {
 
         val days = allpairs.result
 
-        for (day in days) {
+        for (day in days!!) {
             if (day.date == date.format(format)) {
                 day.pairs.forEach { para ->
                     // Убедимся, что номер пары не превышает 5

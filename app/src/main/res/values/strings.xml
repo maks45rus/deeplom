@@ -23,5 +23,8 @@
     <string name="error_schedule">Не получилось загрузить расписание :(</string>
     <string name="group_not_found">Группа не найдена</string>
     <string name="teacher_not_found">Преподаватель не найден</string>
+    <string name="internet_status">Internet connection status</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="no_api_connection">No api connection</string>
 
 </resources>

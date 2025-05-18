@@ -271,8 +271,9 @@ class RaspisanieFragment : Fragment() {
         }
     }
 
-    private fun showError(message: String) {
-        binding.errorTextView.text = message
+    private fun showError(e: String) {
+        Log.e("RaspisanieFragment", e)
+        binding.errorTextView.text = getString(R.string.error_schedule)
         binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.VISIBLE
         binding.raspisanieList.visibility = View.GONE
@@ -283,6 +284,7 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.addAll(rasp)
         rasisanieAdapter.notifyDataSetChanged()
     }
+
     private fun showSchedule(){
         binding.progressSchedule.visibility = View.GONE
         binding.raspisanieList.visibility = View.VISIBLE

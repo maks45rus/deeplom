@@ -29,7 +29,7 @@ class HomeFragment : Fragment() {
         val homeName = sharedPreferences.getString("home_name", null)
         val homeType = sharedPreferences.getString("home_type", null)
 
-        if (homeName=="" || homeType=="") {
+        if (homeName==null || homeType==null) {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.main_cont, savedFragment)
                 .commit()

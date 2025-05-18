@@ -24,6 +24,30 @@
 
         </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/internetStatusIcon"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:background="@color/gray"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/main_cont"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_gravity="start"
+                android:background="@color/light_gray"/>
+            <TextView
+                android:id="@+id/error_text_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="@string/no_internet_connection"/>
+        </FrameLayout>
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/bot_nav"
             android:layout_width="match_parent"
@@ -34,6 +58,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:contentInsetStart="0dp">
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -66,13 +91,12 @@
                     android:stateListAnimator="@animator/button_scale_animator"
                     android:clickable="true"
                     android:focusable="true"/>
+
+
             </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
 
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
 </androidx.drawerlayout.widget.DrawerLayout>

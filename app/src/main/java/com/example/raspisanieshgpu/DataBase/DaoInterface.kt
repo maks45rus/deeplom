@@ -78,7 +78,7 @@ interface GroupDao {
 @Dao
 interface CachedScheduleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdate(schedule: CachedSchedule)
+    suspend fun insert(schedule: CachedSchedule)
 
     @Query("SELECT * FROM CachedSchedule WHERE entityId = :entityId AND entityType = :entityType AND weekStartDate = :weekStartDate")
     suspend fun getSchedule(entityId: Int, entityType: String, weekStartDate: String): CachedSchedule?

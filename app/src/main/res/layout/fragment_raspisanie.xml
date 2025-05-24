@@ -59,110 +59,107 @@
         android:layout_height="40dp"
         android:background="@color/top_panel"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/name_layout"
-        android:weightSum="20">
+        android:weightSum="12"
+        app:layout_constraintTop_toBottomOf="@+id/name_layout">
 
         <ImageView
             android:id="@+id/btn_prev"
-            android:layout_width="70dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
+            android:layout_gravity="start"
             android:contentDescription="@string/todo"
             android:src="@drawable/baseline_arrow_back_ios_24"
-            android:layout_weight="1"/>
+            android:layout_weight="3"/>
 
-        <HorizontalScrollView
-            android:id="@+id/scroll_layout"
+
+        <LinearLayout
+            android:id="@+id/date_layout"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
-            android:scrollbars="none"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/top_panel"
-            android:layout_weight="18">
+            android:layout_height="match_parent"
+            android:layout_weight="6"
+            android:orientation="horizontal">
 
-
-            <LinearLayout
-                android:id="@+id/date_layout"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/date1"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Monday"
+                android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/date1"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/top_panel_text"
-                    android:background="@drawable/background_selector"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:gravity="center"
-                    android:text="@string/Monday"
-                    android:textSize="20sp" />
-                <TextView
-                    android:id="@+id/date2"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/top_panel_text"
-                    android:background="@drawable/background_selector"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:gravity="center"
-                    android:text="@string/Tuesday"
-                    android:textSize="20sp" />
-                <TextView
-                    android:id="@+id/date3"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/top_panel_text"
-                    android:background="@drawable/background_selector"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:gravity="center"
-                    android:text="@string/Wednesday"
-                    android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Tuesday"
+                android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/date4"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/background_selector"
-                    android:gravity="center"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:text="@string/Thursday"
-                    android:textColor="@color/top_panel_text"
-                    android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Wednesday"
+                android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/date5"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/top_panel_text"
-                    android:background="@drawable/background_selector"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:gravity="center"
-                    android:text="@string/Friday"
-                    android:textSize="20sp" />
-                <TextView
-                    android:id="@+id/date6"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/top_panel_text"
-                    android:background="@drawable/background_selector"
-                    android:stateListAnimator="@animator/button_scale_animator"
-                    android:gravity="center"
-                    android:text="@string/Saturday"
-                    android:textSize="20sp" />
+            <TextView
+                android:id="@+id/date4"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/background_selector"
+                android:gravity="center"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:text="@string/Thursday"
+                android:textColor="@color/top_panel_text"
+                android:textSize="12sp" />
 
-            </LinearLayout>
-        </HorizontalScrollView>
+            <TextView
+                android:id="@+id/date5"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Friday"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/date6"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textColor="@color/top_panel_text"
+                android:background="@drawable/background_selector"
+                android:stateListAnimator="@animator/button_scale_animator"
+                android:gravity="center"
+                android:text="@string/Saturday"
+                android:textSize="12sp" />
+
+                </LinearLayout>
 
         <ImageView
             android:id="@+id/btn_next"
-            android:layout_width="70dp"
+            android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:contentDescription="@string/todo"
             android:src="@drawable/baseline_arrow_forward_ios_24"
-            android:layout_weight="1"/>
+            android:layout_weight="3"/>
 
     </LinearLayout>
 

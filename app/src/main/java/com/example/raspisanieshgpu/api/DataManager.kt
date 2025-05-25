@@ -1,54 +1,20 @@
 package com.example.raspisanieshgpu.api
 
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.Group
 import com.example.raspisanieshgpu.DataBase.Teacher
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object DataManager {
 
     private var db = databaseobj.database
-    suspend fun fetchAndSaveTeachers() {
-        withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.getTeachers()
-                if(!response.ok)
-                    throw Exception(response.error)
-                val teachers = response.result!!.map { Teacher(id = it.id, name = it.name) }
-                db.getTeacherDao().deleteAll()
-                db.getTeacherDao().insertAll(teachers)
-                Log.d("DataManager", "fetch teachers succsess")
-            }catch (e: Exception){
-                Log.e("DataManager", "Error fetching data teachers: ${e.message}", e)
-            }
 
-        }
-    }
-
-    suspend fun fetchAndSaveGroups() {
-        withContext(Dispatchers.IO) {
-            try {
-
-                val response = apiService.getGroups()
-                if(!response.ok)
-                    throw Exception(response.error)
-
-                val groups = response.result!!.flatMap {fac -> fac.groups.map { group ->
-                        Group(id = group.id, name = group.name)
-                    }
-                }
-                db.getGroupDao().deleteAll()
-                db.getGroupDao().insertAll(groups)
-                Log.d("DataManager", "fetch groups succsess")
-            } catch (e: Exception) {
-                Log.e("DataManager", "Error fetching data groups: ${e.message}", e)
-            }
-        }
-    }
 
    /* если ид на сервере меняется придется так suspend fun refreshGroups() {
         withContext(Dispatchers.IO) {
@@ -184,57 +150,96 @@ object DataManager {
         }
     }
 
-    suspend fun addFavorite(pairsfor: String, namesearch: String){
-        withContext(Dispatchers.IO) {
-            try{
-                var isFavorite = false
-                when (pairsfor) {
-                    "group" -> {
-                        val group = databaseobj.database.getGroupDao()
-                            .getGroupByName(namesearch)
-                        isFavorite = group.isFavorite
-                        databaseobj.database.getGroupDao()
-                            .setFavoriteStatus(group.id, !isFavorite)
-                    }
-                    "teacher" -> {
-                        val teacher = databaseobj.database.getTeacherDao()
-                            .getTeacherByName(namesearch)
-                        isFavorite = teacher.isFavorite
-                        databaseobj.database.getTeacherDao()
-                            .setFavoriteStatus(teacher.id, !isFavorite)
-                    }
-                }
-            }finally{
+    suspend fun toggleFavorite(entityType: String, entityName: String): Boolean {
+        return try {
+            when (entityType) {
+                "group" -> handleGroupFavorite(entityName)
+                "teacher" -> handleTeacherFavorite(entityName)
+                else -> false
             }
+        } catch (e: Exception) {
+            Log.e("Favorite", "Error toggling favorite status for $entityType: $entityName", e)
+            false
         }
+    }
+
+    private suspend fun handleGroupFavorite(groupName: String): Boolean {
+        try {
+            val groupDao = databaseobj.database.getGroupDao()
+            val group = groupDao.getGroupByName(groupName)
+            groupDao.setFavoriteStatus(group.id, !group.isFavorite)
+            Log.d("Favorite", "Group ${group.name} favorite status toggled to ${!group.isFavorite}")
+            return true
+        } catch (e: Exception) {
+            Log.w("Favorite", "Group not found: $groupName")
+            return false
+        }
+    }
+
+    private suspend fun handleTeacherFavorite(teacherName: String): Boolean {
+        try {
+            val db = databaseobj.database
+            val teacher = db.getTeacherDao().getTeacherByName(teacherName)
+            db.getTeacherDao().setFavoriteStatus(teacher.name, !teacher.isFavorite)
+            Log.d("Favorite", "Teacher ${teacher.name} favorite status toggled to ${!teacher.isFavorite}")
+            return true
+        } catch (e: Exception) {
+            Log.w("Favorite", "Teacher not found: $teacherName")
+            return false
+        }
+    }
+
+    suspend fun isFavorite(entityType: String, entityName: String): Boolean{
+
+            withContext(Dispatchers.Main) {
+                return@withContext try {
+                    when (entityType) {
+                        "group" -> {
+                            databaseobj.database.getGroupDao().getGroupByName(entityName).isFavorite
+                        }
+                        "teacher" -> {
+                            databaseobj.database.getTeacherDao().getTeacherByName(entityName).isFavorite
+                        }
+                        else -> false
+                    }
+                } catch (e: Exception) {
+                    Log.e("RaspisanieFragment", "error: ${e.message}", e)
+                    return@withContext false
+                }
+            }
+
     }
 
     fun isApiAvailable(): Boolean {
         return true
     }
 
-    suspend fun fetchPairs(date: String, week: Int, id: Int, pairsfor: String): PairsResponse {
-        return try {
+    suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String): PairsResponse {
+        var response: PairsResponse
+        try {
             withContext(Dispatchers.IO) {
-                val response = if (pairsfor == "group") {
+                val id: Int
+                response = if (pairsfor == "group"){
+                    id = db.getGroupDao().getGroupByName(name).id
                     apiService.getPairsGroup(date, week, id)
-                } else {
+                }else{
+                    id = db.getTeacherDao().getTeacherByName(name).id
                     apiService.getPairsTeacher(date, week, id)
                 }
+                Log.d("DataManager", "Fetch pairs success for $pairsfor $name")
 
-                Log.d("DataManager", "Fetch pairs success for $pairsfor $id")
-                response // Возвращаем успешный ответ
             }
         } catch (e: Exception) {
-            Log.e("DataManager", "Error fetching data for $pairsfor $id: ${e.message}", e)
+            Log.e("DataManager", "Error fetching data for $pairsfor $name: ${e.message}", e)
 
             // Возвращаем корректный PairsResponse с флагом ошибки
-            PairsResponse(
+            response = PairsResponse(
                 ok = false,
                 result = emptyList(), // Пустой список как значение по умолчанию
                 error = e.message ?: "Unknown network error"
             )
         }
+        return response
     }
 
 }

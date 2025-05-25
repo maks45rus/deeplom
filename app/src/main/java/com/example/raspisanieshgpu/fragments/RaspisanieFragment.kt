@@ -67,7 +67,7 @@ class RaspisanieFragment : Fragment() {
         val db = databaseobj.database
         namesearch = arguments?.getString(NAME_SEARCH).toString()
         pairsfor = arguments?.getString(PAIRS_FOR).toString()
-        var idsearch = 0
+        var idsearch: Int
 
         rasisanieAdapter = PairsAdapter(requireContext())
         binding.raspisanieList.apply {
@@ -97,31 +97,17 @@ class RaspisanieFragment : Fragment() {
 
 
         viewLifecycleOwner.lifecycleScope.launch {  // в избранном ли
-            withContext(Dispatchers.Main) {
-                try {
-                    idsearch = when (pairsfor) {
-                        "group" -> {
-                            isFavorite = databaseobj.database.getGroupDao().getGroupByName(namesearch).isFavorite
-                            db.getGroupDao().getGroupByName(namesearch).id!!
-                        }
-                        "teacher" -> {
-                            isFavorite = databaseobj.database.getTeacherDao().getTeacherByName(namesearch).isFavorite
-                            db.getTeacherDao().getTeacherByName(namesearch).id!!
-                        }
-                        else -> 0
-                    }
-                    updateFavoriteButton()
-                } catch (e: Exception) {
-                    Log.e("RaspisanieFragment", "error: ${e.message}", e)
-                }
-                loadScheduleForWeek(selectedDate, idsearch)
-            }
+            isFavorite = DataManager.isFavorite(pairsfor,namesearch)
+            updateFavoriteButton()
+            loadScheduleForWeek(selectedDate, namesearch)
         }
 
 
         // Обработчик клика по кнопке избранного
         binding.btnFavorite.setOnClickListener {
-            addFavorite()
+            viewLifecycleOwner.lifecycleScope.launch {
+                DataManager.toggleFavorite(entityType = pairsfor, entityName = namesearch)
+            }
         }
 
         binding.btnSethome.setOnClickListener {
@@ -133,21 +119,21 @@ class RaspisanieFragment : Fragment() {
                 if (selDate != null) {
                     selectedDate = selDate
                     changedate(selectedDate) // Обновляем текст даты
-                    loadScheduleForWeek(selectedDate, idsearch)
+                    loadScheduleForWeek(selectedDate, namesearch)
                 }
             }
         }
 
         binding.btnPrev.setOnClickListener {   // Пролистывание на неделю назад
             selectedDate = currentWeekStart!!.minusDays(2)
-            loadScheduleForWeek(selectedDate, idsearch)
+            loadScheduleForWeek(selectedDate, namesearch)
             updateButtonState("Sat")
             changedate(selectedDate) // Обновляем текст даты
         }
 
         binding.btnNext.setOnClickListener {   // Пролистывание на неделю вперед
             selectedDate = currentWeekStart!!.plusDays(7)
-            loadScheduleForWeek(selectedDate, idsearch)
+            loadScheduleForWeek(selectedDate, namesearch)
             updateButtonState("Mon")
             changedate(selectedDate) // Обновляем текст даты
         }
@@ -200,29 +186,21 @@ class RaspisanieFragment : Fragment() {
 
 
 
-    private fun loadScheduleForWeek(date: LocalDate, idsearch: Int) {
+    private fun loadScheduleForWeek(date: LocalDate, namesearch: String) {
 
-        // Показываем индикатор загрузки
-        startloading()
         viewLifecycleOwner.lifecycleScope.launch {
+            val db = databaseobj.database
             try {
                 currentWeekStart = getWeekStartDate(date)
                 val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format),
-                    1, idsearch, pairsfor)
+                    1, namesearch, pairsfor)
 
                 if (newrasp.ok) {
                     currentWeekSchedule = newrasp
                     updateRaspisanie(currentWeekSchedule!!, date)
 
                     if (isFavoriteItem()) {
-                        val scheduleJson = convertScheduleToJson(newrasp)
-                        val cachedSchedule = CachedSchedule(
-                            entityId = idsearch,
-                            entityType = pairsfor,
-                            weekStartDate = currentWeekStart!!.format(format),
-                            scheduleData = scheduleJson
-                        )
-                        databaseobj.database.getCachedScheduleDao().insert(cachedSchedule)
+                        db.getGroupDao().getGroupByName(namesearch).scheduleData
                     }
                 } else {
                     Log.e("RaspisanieFragment", newrasp.error.toString())
@@ -389,19 +367,8 @@ class RaspisanieFragment : Fragment() {
     private fun addFavorite(){
         viewLifecycleOwner.lifecycleScope.launch {
             try{
-                when (pairsfor) {
-                    "group" -> {
-                        val group = databaseobj.database.getGroupDao()
-                            .getGroupByName(namesearch)
-                        databaseobj.database.getGroupDao()
-                            .setFavoriteStatus(group.id, !isFavorite)
-                    }
-                    "teacher" -> {
-                        val teacher = databaseobj.database.getTeacherDao().getTeacherByName(namesearch)
-                        databaseobj.database.getTeacherDao()
-                            .setFavoriteStatus(teacher.id, !isFavorite)
-                    }
-                }
+                if (DataManager.toggleFavorite(pairsfor,namesearch)) isFavorite = !isFavorite
+
             }finally{
                 isFavorite = !isFavorite
                 updateFavoriteButton()

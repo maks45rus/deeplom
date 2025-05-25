@@ -15,12 +15,6 @@ interface TeacherDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(teachers: List<Teacher>)
 
-    @Query("DELETE FROM Teacher WHERE isFavorite = 0")
-    suspend fun deleteNonFavorites()
-
-    @Query("UPDATE Teacher SET id = :newId WHERE name = :name AND isFavorite = 1")
-    suspend fun updateIdForFavorite(name: String, newId: Int)
-
     @Query("SELECT * FROM Teacher WHERE isFavorite = 1")
     suspend fun getFavorites(): List<Teacher>
 
@@ -36,8 +30,11 @@ interface TeacherDao {
     @Query("SELECT * FROM Teacher WHERE name = :name")
     suspend fun getTeacherByName(name: String): Teacher
 
-    @Query("UPDATE Teacher SET isFavorite = :isFavorite WHERE id = :id")
-    suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
+    @Query("UPDATE Teacher SET isFavorite = :isFavorite WHERE name = :name")
+    suspend fun setFavoriteStatus(name: String, isFavorite: Boolean)
+
+    @Query("UPDATE Teacher SET scheduleData = :scheduleData WHERE name = :name")
+    suspend fun setScheduleData(name: String, scheduleData: Boolean)
 }
 
 @Dao
@@ -47,13 +44,6 @@ interface GroupDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(groups: List<Group>)
-
-    @Query("DELETE FROM `Group` WHERE isFavorite = 0")
-    suspend fun deleteNonFavorites()
-
-    // Обновляет ID группы по имени (для избранных)
-    @Query("UPDATE `Group` SET id = :newId WHERE name = :name AND isFavorite = 1")
-    suspend fun updateIdForFavorite(name: String, newId: Int)
 
     // Получает избранные группы
     @Query("SELECT * FROM `Group` WHERE isFavorite = 1")
@@ -73,6 +63,10 @@ interface GroupDao {
 
     @Query("UPDATE `Group` SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
+
+    @Query("UPDATE `Group` SET scheduleData = :scheduleData WHERE name = :name")
+    suspend fun setScheduleData(name: String, scheduleData: Boolean)
+
 }
 
 @Dao

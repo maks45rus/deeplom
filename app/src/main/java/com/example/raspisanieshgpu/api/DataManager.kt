@@ -184,27 +184,32 @@ object DataManager {
         }
     }
 
- suspend fun toggleTeacherFavorite(teacherId: Int, isFavorite: Boolean) {
-     withContext(Dispatchers.IO) {
-         try {
-             db.getTeacherDao().setFavoriteStatus(teacherId, isFavorite)
-             Log.d("DataManager", "Teacher $teacherId favorite status set to $isFavorite")
-         } catch (e: Exception) {
-             Log.e("DataManager", "Error setting teacher favorite status: ${e.message}", e)
-         }
-     }
- }
+    suspend fun addFavorite(pairsfor: String, namesearch: String){
+        withContext(Dispatchers.IO) {
+            try{
+                var isFavorite = false
+                when (pairsfor) {
+                    "group" -> {
+                        val group = databaseobj.database.getGroupDao()
+                            .getGroupByName(namesearch)
+                        isFavorite = group.isFavorite
+                        databaseobj.database.getGroupDao()
+                            .setFavoriteStatus(group.id, !isFavorite)
+                    }
+                    "teacher" -> {
+                        val teacher = databaseobj.database.getTeacherDao()
+                            .getTeacherByName(namesearch)
+                        isFavorite = teacher.isFavorite
+                        databaseobj.database.getTeacherDao()
+                            .setFavoriteStatus(teacher.id, !isFavorite)
+                    }
+                }
+            }finally{
 
- suspend fun toggleGroupFavorite(teacherId: Int, isFavorite: Boolean) {
-     withContext(Dispatchers.IO) {
-         try {
-             db.getGroupDao().setFavoriteStatus(teacherId, isFavorite)
-             Log.d("DataManager", "Group $teacherId favorite status set to $isFavorite")
-         } catch (e: Exception) {
-             Log.e("DataManager", "Error setting Group favorite status: ${e.message}", e)
-         }
-     }
- }
+                }
+            }
+        }
+    }
 
     suspend fun fetchPairs(date: String, week: Int, id: Int, pairsfor: String): PairsResponse {
         return try {

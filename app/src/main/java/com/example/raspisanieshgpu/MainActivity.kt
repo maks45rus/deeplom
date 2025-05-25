@@ -1,10 +1,10 @@
 package com.example.raspisanieshgpu
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +15,7 @@ import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.fragments.HomeFragment
 import com.example.raspisanieshgpu.fragments.SavedFragment
 import com.example.raspisanieshgpu.fragments.SearchFragment
+import com.example.raspisanieshgpu.service.WorkManagerHelper
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var workManagerHelper: WorkManagerHelper
 
     private val homeFragment = HomeFragment()
     private val savedFragment = SavedFragment()
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        workManagerHelper.setupScheduleCheckWorker()
 
         lifecycleScope.launch {
             try {
@@ -44,24 +47,18 @@ class MainActivity : AppCompatActivity() {
                     showNoInternetIcon()
                     throw Exception("internet error")
                 }
-                if(!isApiAvailable()){
+                if(!DataManager.isApiAvailable()){
                     showNoApiIcon()
                     throw Exception("API error")
                 }
                 DataManager.refreshGroups()
                 DataManager.refreshTeachers()
-                Log.d("DataUpdate", "Данные успешно обновлены с сохранением избранного")
+                Log.d("DataUpdateMainActivity", "database updated")
 
             } catch (e: Exception) {
                 Log.e("DataUpdateMainActivity","error:",e)
-
-
-
-
             }
         }
-
-        // Обработка кликов по кнопкам
 
         binding.btnSearch.setOnClickListener {
             loadFragment(searchFragment)
@@ -110,14 +107,6 @@ class MainActivity : AppCompatActivity() {
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
-    private suspend fun isApiAvailable(): Boolean{
-        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val day = LocalDate.now()
-        val rr = DataManager.fetchPairs(day.format(format), 0, 1, "group").ok
-        Log.d("DataUpdate", "API ${rr}:")
-        return rr
-
-    }
 
     private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
         supportFragmentManager.beginTransaction()
@@ -130,6 +119,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnSearch.isSelected = selectedButtonId == R.id.btnSearch
         binding.btnSaved.isSelected = selectedButtonId == R.id.btnSaved
     }
+
 
 
 }

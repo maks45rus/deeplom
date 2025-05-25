@@ -396,7 +396,6 @@ class RaspisanieFragment : Fragment() {
                         databaseobj.database.getGroupDao()
                             .setFavoriteStatus(group.id, !isFavorite)
                     }
-
                     "teacher" -> {
                         val teacher = databaseobj.database.getTeacherDao().getTeacherByName(namesearch)
                         databaseobj.database.getTeacherDao()

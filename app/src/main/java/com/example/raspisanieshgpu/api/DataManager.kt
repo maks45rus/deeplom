@@ -205,10 +205,12 @@ object DataManager {
                     }
                 }
             }finally{
-
-                }
             }
         }
+    }
+
+    fun isApiAvailable(): Boolean {
+        return true
     }
 
     suspend fun fetchPairs(date: String, week: Int, id: Int, pairsfor: String): PairsResponse {

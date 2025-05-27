@@ -30,11 +30,14 @@ interface TeacherDao {
     @Query("SELECT * FROM Teacher WHERE name = :name")
     suspend fun getTeacherByName(name: String): Teacher
 
+    @Query("SELECT scheduleData FROM Teacher WHERE name = :name")
+    suspend fun getScheduleData(name: String): String
+
     @Query("UPDATE Teacher SET isFavorite = :isFavorite WHERE name = :name")
     suspend fun setFavoriteStatus(name: String, isFavorite: Boolean)
 
     @Query("UPDATE Teacher SET scheduleData = :scheduleData WHERE name = :name")
-    suspend fun setScheduleData(name: String, scheduleData: Boolean)
+    suspend fun setScheduleData(name: String, scheduleData: String)
 }
 
 @Dao
@@ -61,11 +64,14 @@ interface GroupDao {
     @Query("SELECT * FROM `Group` WHERE name = :name")
     suspend fun getGroupByName(name: String): Group
 
+    @Query("SELECT scheduleData FROM `Group` WHERE name = :name")
+    suspend fun getScheduleData(name: String): String
+
     @Query("UPDATE `Group` SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
 
     @Query("UPDATE `Group` SET scheduleData = :scheduleData WHERE name = :name")
-    suspend fun setScheduleData(name: String, scheduleData: Boolean)
+    suspend fun setScheduleData(name: String, scheduleData: String)
 
 }
 

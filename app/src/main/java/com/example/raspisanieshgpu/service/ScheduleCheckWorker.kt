@@ -46,56 +46,40 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         // Проверяем избранные группы
         val favoriteGroups = db.getGroupDao().getFavorites()
         for (group in favoriteGroups) {
-            val cachedSchedule = db.getCachedScheduleDao().getSchedule(
-                group.id,
-                "group",
-                getWeekStartDate(today).format(format)
+            val cachedSchedule = group.scheduleData
+
+            val apiSchedule = DataManager.fetchPairs(
+                getWeekStartDate(today).format(format),
+                1,
+                group.name,
+                "group"
             )
 
-            if (cachedSchedule != null) {
-                val apiSchedule = DataManager.fetchPairs(
-                    getWeekStartDate(today).format(format),
-                    1,
-                    group.id,
-                    "group"
+            if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
+                showNotification(
+                    "Изменение расписания",
+                    "Обнаружены изменения в расписании группы ${group.name}"
                 )
-
-                Log.d("WorkerNotif", "group ${(apiSchedule.ok &&
-                        hasScheduleChanged(cachedSchedule.scheduleData, apiSchedule))}")
-                if (apiSchedule.ok && hasScheduleChanged(cachedSchedule.scheduleData, apiSchedule)) {
-                    showNotification(
-                        "Изменение расписания",
-                        "Обнаружены изменения в расписании группы ${group.name}"
-                    )
-                }
             }
         }
 
         // Проверяем избранных преподавателей
         val favoriteTeachers = db.getTeacherDao().getFavorites()
         for (teacher in favoriteTeachers) {
-            val cachedSchedule = db.getCachedScheduleDao().getSchedule(
-                teacher.id,
-                "teacher",
-                getWeekStartDate(today).format(format)
+            val cachedSchedule = teacher.scheduleData
+
+            val apiSchedule = DataManager.fetchPairs(
+                getWeekStartDate(today).format(format),
+                1,
+                teacher.name,
+                "teacher"
             )
 
-            if (cachedSchedule != null) {
-                val apiSchedule = DataManager.fetchPairs(
-                    getWeekStartDate(today).format(format),
-                    1,
-                    teacher.id,
-                    "teacher"
+            if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
+                showNotification(
+                    "Изменение расписания",
+                    "Обнаружены изменения в расписании преподавателя ${teacher.name}"
                 )
-
-                Log.d("WorkerNotif", "prepod ${(apiSchedule.ok &&
-                        hasScheduleChanged(cachedSchedule.scheduleData, apiSchedule))}")
-                if (apiSchedule.ok && hasScheduleChanged(cachedSchedule.scheduleData, apiSchedule)) {
-                    showNotification(
-                        "Изменение расписания",
-                        "Обнаружены изменения в расписании преподавателя ${teacher.name}"
-                    )
-                }
             }
         }
     }
@@ -117,14 +101,12 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         ) as NotificationManager
 
         // Создаем канал уведомлений (для Android 8.0+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "schedule_changes",
-                "Изменения расписания",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            "schedule_changes",
+            "Изменения расписания",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
 
         val notification = NotificationCompat.Builder(applicationContext, "schedule_changes")
             .setSmallIcon(R.drawable.baseline_notifications_24)

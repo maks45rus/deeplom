@@ -167,9 +167,10 @@ object DataManager {
         try {
             val groupDao = databaseobj.database.getGroupDao()
             val group = groupDao.getGroupByName(groupName)
-            groupDao.setFavoriteStatus(group.id, !group.isFavorite)
+            val fav = group.isFavorite
+            groupDao.setFavoriteStatus(group.id, !fav)
             Log.d("Favorite", "Group ${group.name} favorite status toggled to ${!group.isFavorite}")
-            return true
+            return !group.isFavorite
         } catch (e: Exception) {
             Log.w("Favorite", "Group not found: $groupName")
             return false
@@ -180,9 +181,10 @@ object DataManager {
         try {
             val db = databaseobj.database
             val teacher = db.getTeacherDao().getTeacherByName(teacherName)
-            db.getTeacherDao().setFavoriteStatus(teacher.name, !teacher.isFavorite)
+            val fav = teacher.isFavorite
+            db.getTeacherDao().setFavoriteStatus(teacher.name, !fav)
             Log.d("Favorite", "Teacher ${teacher.name} favorite status toggled to ${!teacher.isFavorite}")
-            return true
+            return !teacher.isFavorite
         } catch (e: Exception) {
             Log.w("Favorite", "Teacher not found: $teacherName")
             return false
@@ -191,8 +193,8 @@ object DataManager {
 
     suspend fun isFavorite(entityType: String, entityName: String): Boolean{
 
-            withContext(Dispatchers.Main) {
-                return@withContext try {
+        return withContext(Dispatchers.Main) {
+                 try {
                     when (entityType) {
                         "group" -> {
                             databaseobj.database.getGroupDao().getGroupByName(entityName).isFavorite
@@ -204,9 +206,9 @@ object DataManager {
                     }
                 } catch (e: Exception) {
                     Log.e("RaspisanieFragment", "error: ${e.message}", e)
-                    return@withContext false
+                    false
                 }
-            }
+        }
 
     }
 

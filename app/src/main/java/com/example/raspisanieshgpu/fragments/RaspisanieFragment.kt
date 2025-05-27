@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.CachedSchedule
 import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
@@ -23,9 +22,7 @@ import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
 import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -36,8 +33,8 @@ class RaspisanieFragment : Fragment() {
     private lateinit var rasisanieAdapter: ArrayAdapter<String>
     private lateinit var sharedPreferences: SharedPreferences
     private var isFavorite = false
-    private var namesearch = ""
-    private var pairsfor = ""
+    private var namesearch = "430б"
+    private var pairsfor = "group"
     private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
     private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
     private var currentWeekSchedule: PairsResponse? = null // Кэш расписания для текущей недели
@@ -64,10 +61,10 @@ class RaspisanieFragment : Fragment() {
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
-        val db = databaseobj.database
+
         namesearch = arguments?.getString(NAME_SEARCH).toString()
         pairsfor = arguments?.getString(PAIRS_FOR).toString()
-        var idsearch: Int
+
 
         rasisanieAdapter = PairsAdapter(requireContext())
         binding.raspisanieList.apply {
@@ -79,9 +76,8 @@ class RaspisanieFragment : Fragment() {
             else -> namesearch.uppercase()
         }
 
-        val homeName = sharedPreferences.getString("home_name", null)
         binding.btnSethome.setImageResource(
-            when (homeName) {
+            when (sharedPreferences.getString("home_name", null)) {
                 namesearch -> R.drawable.baseline_home_selected
                 else -> R.drawable.baseline_home_unselected
             }
@@ -93,21 +89,23 @@ class RaspisanieFragment : Fragment() {
         }
         currentWeekStart = getWeekStartDate(selectedDate)
         changedate(selectedDate)
-        updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek).toString())
+        updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek))
 
 
         viewLifecycleOwner.lifecycleScope.launch {  // в избранном ли
-            isFavorite = DataManager.isFavorite(pairsfor,namesearch)
-            updateFavoriteButton()
-            loadScheduleForWeek(selectedDate, namesearch)
+            isFavorite = isFavoriteItem(namesearch, pairsfor)
+            updateFavoriteButton(isFavorite)
+            loadScheduleForWeek(selectedDate, namesearch, pairsfor)
         }
 
 
         // Обработчик клика по кнопке избранного
         binding.btnFavorite.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                DataManager.toggleFavorite(entityType = pairsfor, entityName = namesearch)
+                isFavorite = DataManager.toggleFavorite(pairsfor, namesearch)
+                updateFavoriteButton(isFavorite)
             }
+
         }
 
         binding.btnSethome.setOnClickListener {
@@ -119,21 +117,21 @@ class RaspisanieFragment : Fragment() {
                 if (selDate != null) {
                     selectedDate = selDate
                     changedate(selectedDate) // Обновляем текст даты
-                    loadScheduleForWeek(selectedDate, namesearch)
+                    loadScheduleForWeek(selectedDate, namesearch, pairsfor)
                 }
             }
         }
 
         binding.btnPrev.setOnClickListener {   // Пролистывание на неделю назад
             selectedDate = currentWeekStart!!.minusDays(2)
-            loadScheduleForWeek(selectedDate, namesearch)
+            loadScheduleForWeek(selectedDate, namesearch, pairsfor)
             updateButtonState("Sat")
             changedate(selectedDate) // Обновляем текст даты
         }
 
         binding.btnNext.setOnClickListener {   // Пролистывание на неделю вперед
             selectedDate = currentWeekStart!!.plusDays(7)
-            loadScheduleForWeek(selectedDate, namesearch)
+            loadScheduleForWeek(selectedDate, namesearch, pairsfor)
             updateButtonState("Mon")
             changedate(selectedDate) // Обновляем текст даты
         }
@@ -186,73 +184,66 @@ class RaspisanieFragment : Fragment() {
 
 
 
-    private fun loadScheduleForWeek(date: LocalDate, namesearch: String) {
+    private fun loadScheduleForWeek(date: LocalDate, name: String,type: String) {
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch{
+            startloading()
             val db = databaseobj.database
             try {
                 currentWeekStart = getWeekStartDate(date)
                 val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format),
-                    1, namesearch, pairsfor)
+                    1, name, type)
 
                 if (newrasp.ok) {
                     currentWeekSchedule = newrasp
                     updateRaspisanie(currentWeekSchedule!!, date)
-
-                    if (isFavoriteItem()) {
-                        db.getGroupDao().getGroupByName(namesearch).scheduleData
+                    if (isFavorite) {
+                        if(type == "group") db.getGroupDao().setScheduleData(name,convertScheduleToJson(newrasp))
+                        else db.getTeacherDao().setScheduleData(name,convertScheduleToJson(newrasp))
                     }
                 } else {
                     Log.e("RaspisanieFragment", newrasp.error.toString())
-                    cahchedSchedule(idsearch, currentWeekStart!!)
+                    if (isFavorite){
+                        currentWeekSchedule = loadSchedule(name, type)
+                        updateRaspisanie(currentWeekSchedule!!, date)
+                    }else{
+                        throw Exception("cant found schedule")
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("RaspisanieFragment", "Network error", e)
-                cahchedSchedule(idsearch, currentWeekStart!!)
-            } finally {
-                // Всегда скрываем индикатор загрузки
-                binding.progressSchedule.visibility = View.GONE
+                showError(e)
             }
         }
     }
 
-    private suspend fun cahchedSchedule(id: Int, weekStart: LocalDate) {
-        // Пробуем загрузить из кэша
-        viewLifecycleOwner.lifecycleScope.launch {
-        try {
-            val cached = databaseobj.database.getCachedScheduleDao()
-                .getSchedule(id, pairsfor, weekStart.format(format))
+    private suspend fun loadSchedule(name: String, type: String): PairsResponse{
+        val db = databaseobj.database
 
-            if (cached != null) {
-
-                val cachedSchedule = parseCachedSchedule(cached.scheduleData)
-                currentWeekSchedule = cachedSchedule
-                updateRaspisanie(cachedSchedule, weekStart)
-                Toast.makeText(
-                    requireContext(),
-                    "Используются кэшированные данные",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else showError(getString(R.string.error_schedule))
-        } catch (e: Exception) {
-            showError(getString(R.string.error_schedule))
-        }
-            }
+        return parseCachedSchedule(
+            if(type == "group") db.getGroupDao().getScheduleData(name)
+        else db.getTeacherDao().getScheduleData(name)
+        )
     }
 
-    private fun showError(e: String) {
-        Log.e("RaspisanieFragment", e)
+
+    private fun showError(e: Exception) {
+        Log.e("RaspisanieFragment", "error: ",e)
         binding.errorTextView.text = getString(R.string.error_schedule)
         binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.VISIBLE
         binding.raspisanieList.visibility = View.GONE
     }
 
-    private suspend fun isFavoriteItem(): Boolean {
-        return when (pairsfor) {
-            "group" -> databaseobj.database.getGroupDao().getGroupByName(namesearch).isFavorite ?: false
-            "teacher" -> databaseobj.database.getTeacherDao().getTeacherByName(namesearch).isFavorite ?: false
-            else -> false
+    private suspend fun isFavoriteItem(name: String, type: String): Boolean {
+        return try {
+            when (type) {
+                "group" -> databaseobj.database.getGroupDao().getGroupByName(name).isFavorite
+                "teacher" -> databaseobj.database.getTeacherDao().getTeacherByName(name).isFavorite
+                else -> false
+            }
+        }catch (e: Exception){
+            Log.e("RaspisanieFragment isf","error: ", e)
+            false
         }
     }
     private fun convertScheduleToJson(schedule: PairsResponse): String {
@@ -272,10 +263,6 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun updateRaspisanie(allpairs: PairsResponse, date: LocalDate) {
-        if (!allpairs.ok) {
-            Log.e("RaspisanieFragment", "no raspisania")
-            return
-        }
 
         // Очищаем только 5 пар
         rasp = MutableList(5) { "-" }
@@ -344,9 +331,9 @@ class RaspisanieFragment : Fragment() {
         }
     }
 
-    private fun updateFavoriteButton() {
+    private fun updateFavoriteButton(fav: Boolean) {
         binding.btnFavorite.setImageResource(
-            if (isFavorite) R.drawable.baseline_star_24_selected
+            if (fav) R.drawable.baseline_star_24_selected
             else R.drawable.baseline_star_24_unselected
         )
     }
@@ -364,35 +351,13 @@ class RaspisanieFragment : Fragment() {
     }
 
 
-    private fun addFavorite(){
-        viewLifecycleOwner.lifecycleScope.launch {
-            try{
-                if (DataManager.toggleFavorite(pairsfor,namesearch)) isFavorite = !isFavorite
-
-            }finally{
-                isFavorite = !isFavorite
-                updateFavoriteButton()
-                if (isFavorite && sharedPreferences.getString("home_name", null) == null) {
-                    addHome()
-                }
-            }
-        }
-    }
-
-
     private fun addHome() {
         sharedPreferences.edit {
             putString("home_type", pairsfor)
             putString("home_name", namesearch)
         }
         Toast.makeText(requireContext(), "Домашняя группа/преподаватель сохранена", Toast.LENGTH_SHORT).show()
-        val homeName = sharedPreferences.getString("home_name", null)
-        binding.btnSethome.setImageResource(
-            when (homeName) {
-                namesearch -> R.drawable.baseline_home_selected
-                else -> R.drawable.baseline_home_unselected
-            }
-        )
+        binding.btnSethome.setImageResource(R.drawable.baseline_home_selected)
     }
 
     private fun startloading(){
@@ -402,7 +367,7 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun showSchedule(){
-        binding.raspisanieList.visibility = View.GONE
+        binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.GONE
         binding.raspisanieList.visibility = View.VISIBLE
     }

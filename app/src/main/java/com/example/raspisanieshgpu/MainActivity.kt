@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        workManagerHelper = WorkManagerHelper(this)
         workManagerHelper.setupScheduleCheckWorker()
 
         lifecycleScope.launch {

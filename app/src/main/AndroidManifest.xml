@@ -26,7 +26,8 @@
             android:name=".service.ScheduleCheckService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice|dataSync" />
+            android:foregroundServiceType="connectedDevice|dataSync"
+            tools:ignore="ForegroundServicePermission" />
 
 
         <activity

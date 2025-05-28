@@ -1,19 +1,19 @@
 package com.example.raspisanieshgpu.api
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.Group
+import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.DataBase.Teacher
-import com.example.raspisanieshgpu.DataBase.databaseobj
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
 import com.example.raspisanieshgpu.api.models.PairsResponse
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object DataManager {
-
-    private var db = databaseobj.database
 
 
    /* если ид на сервере меняется придется так suspend fun refreshGroups() {
@@ -88,9 +88,10 @@ object DataManager {
      }
  } */
 
-    suspend fun refreshGroups() {  // если ид не меняется
+    suspend fun refreshGroups(context: Context) {  // если ид не меняется
         withContext(Dispatchers.IO) {
             try {
+                val db = MainDataBase.getInstance(context)
                 // 1. Получаем текущие группы из базы (для проверки существующих)
                 val currentGroups = db.getGroupDao().getAllGroups()
                 val currentGroupIds = currentGroups.map { it.id }.toSet()
@@ -117,14 +118,14 @@ object DataManager {
                 Log.d("DataManager", "Added ${newGroups.size} new groups")
             } catch (e: Exception) {
                 Log.e("DataManager", "Error refreshing groups: ${e.message}", e)
-                throw e
             }
         }
     }
 
-    suspend fun refreshTeachers() {
+    suspend fun refreshTeachers(context: Context) {
         withContext(Dispatchers.IO) {
             try {
+                val db = MainDataBase.getInstance(context)
                 val currentTeachers = db.getTeacherDao().getAllTeachers()
                 val currentTeacherIds = currentTeachers.map { it.id }.toSet()
 
@@ -150,11 +151,11 @@ object DataManager {
         }
     }
 
-    suspend fun toggleFavorite(entityType: String, entityName: String): Boolean {
+    suspend fun toggleFavorite(entityType: String, entityName: String, context: Context): Boolean {
         return try {
             when (entityType) {
-                "group" -> handleGroupFavorite(entityName)
-                "teacher" -> handleTeacherFavorite(entityName)
+                "group" -> handleGroupFavorite(entityName,context)
+                "teacher" -> handleTeacherFavorite(entityName,context)
                 else -> false
             }
         } catch (e: Exception) {
@@ -163,9 +164,10 @@ object DataManager {
         }
     }
 
-    private suspend fun handleGroupFavorite(groupName: String): Boolean {
+    private suspend fun handleGroupFavorite(groupName: String, context: Context): Boolean {
         try {
-            val groupDao = databaseobj.database.getGroupDao()
+            val db = MainDataBase.getInstance(context)
+            val groupDao = db.getGroupDao()
             val group = groupDao.getGroupByName(groupName)
             val fav = group.isFavorite
             groupDao.setFavoriteStatus(group.id, !fav)
@@ -177,71 +179,101 @@ object DataManager {
         }
     }
 
-    private suspend fun handleTeacherFavorite(teacherName: String): Boolean {
+    private suspend fun handleTeacherFavorite(teacherName: String, context: Context): Boolean {
         try {
-            val db = databaseobj.database
-            val teacher = db.getTeacherDao().getTeacherByName(teacherName)
-            val fav = teacher.isFavorite
-            db.getTeacherDao().setFavoriteStatus(teacher.name, !fav)
-            Log.d("Favorite", "Teacher ${teacher.name} favorite status toggled to ${!teacher.isFavorite}")
-            return !teacher.isFavorite
+            var isFavorite = false
+            withContext(Dispatchers.IO){
+                val db = MainDataBase.getInstance(context)
+                val teacher = db.getTeacherDao().getTeacherByName(teacherName)
+                val fav = teacher.isFavorite
+                db.getTeacherDao().setFavoriteStatus(teacher.name, !fav)
+                Log.d("Favorite", "Teacher ${teacher.name} favorite status toggled to ${!teacher.isFavorite}")
+                isFavorite = !teacher.isFavorite
+            }
+            return isFavorite
         } catch (e: Exception) {
             Log.w("Favorite", "Teacher not found: $teacherName")
             return false
         }
     }
 
-    suspend fun isFavorite(entityType: String, entityName: String): Boolean{
-
-        return withContext(Dispatchers.Main) {
-                 try {
-                    when (entityType) {
-                        "group" -> {
-                            databaseobj.database.getGroupDao().getGroupByName(entityName).isFavorite
-                        }
-                        "teacher" -> {
-                            databaseobj.database.getTeacherDao().getTeacherByName(entityName).isFavorite
-                        }
-                        else -> false
-                    }
-                } catch (e: Exception) {
-                    Log.e("RaspisanieFragment", "error: ${e.message}", e)
-                    false
-                }
-        }
-
-    }
 
     fun isApiAvailable(): Boolean {
         return true
     }
 
-    suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String): PairsResponse {
+    suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String, context: Context): PairsResponse {
         var response: PairsResponse
-        try {
-            withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
+            try {
+                val db = MainDataBase.getInstance(context)
                 val id: Int
-                response = if (pairsfor == "group"){
+                response = if (pairsfor == "group") {
                     id = db.getGroupDao().getGroupByName(name).id
                     apiService.getPairsGroup(date, week, id)
-                }else{
+                } else {
                     id = db.getTeacherDao().getTeacherByName(name).id
                     apiService.getPairsTeacher(date, week, id)
                 }
                 Log.d("DataManager", "Fetch pairs success for $pairsfor $name")
 
-            }
-        } catch (e: Exception) {
-            Log.e("DataManager", "Error fetching data for $pairsfor $name: ${e.message}", e)
 
-            // Возвращаем корректный PairsResponse с флагом ошибки
-            response = PairsResponse(
-                ok = false,
-                result = emptyList(), // Пустой список как значение по умолчанию
-                error = e.message ?: "Unknown network error"
-            )
+            } catch (e: Exception) {
+                Log.e("DataManager", "Error fetching data for $pairsfor $name: ${e.message}", e)
+
+                // Возвращаем корректный PairsResponse с флагом ошибки
+                response = PairsResponse(
+                    ok = false,
+                    result = emptyList(), // Пустой список как значение по умолчанию
+                    error = e.message ?: "Unknown network error"
+                )
+            }
         }
         return response
+    }
+    suspend fun saveCachedSchedule(type: String, name: String,schedule: String, context: Context){
+        withContext(Dispatchers.IO) {
+            try {
+                val db = MainDataBase.getInstance(context)
+                if(type == "group") db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
+                else db.getTeacherDao().setScheduleData(name,Gson().toJson(schedule))
+                Log.d("DataManager", "Schedule for ${name} saved")
+            }catch (e: Exception){
+                Log.e("DataManager", "Schedule for ${name} not saved: ", e)
+
+            }
+        }
+    }
+
+    suspend fun loadCachedSchedule(type: String, name: String, context: Context): PairsResponse {
+        var ret = PairsResponse(
+            ok = false,
+            result = emptyList(), // Пустой список как значение по умолчанию
+            error = "Unknown network error"
+        )
+        withContext(Dispatchers.IO) {
+            val json: String
+            try {
+                val db = MainDataBase.getInstance(context)
+                json = if (type == "group") {
+                    db.getGroupDao().getScheduleData(name)
+                } else {
+                    db.getTeacherDao().getScheduleData(name)
+                }
+                Log.d("DataManager", "Schedule for ${name} loaded")
+                ret = Gson().fromJson(json, PairsResponse::class.java)
+
+            }catch (e: Exception){
+                Log.e("DataManager", "Schedule for ${name} not loaded: ", e)
+
+                ret = PairsResponse(
+                    ok = false,
+                    result = emptyList(), // Пустой список как значение по умолчанию
+                    error = e.message ?: "Unknown network error"
+                )
+            }
+        }
+        return ret
     }
 
 }

@@ -6,37 +6,38 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 
-@Database(entities = [Teacher::class, Group::class, CachedSchedule::class], version = 1)
-abstract class MainDataBase: RoomDatabase() {
+@Database(
+    entities = [Teacher::class, Group::class, CachedSchedule::class],
+    version = 1,
+    exportSchema = false // Отключаем экспорт схемы, если не используете миграции
+)
+abstract class MainDataBase : RoomDatabase() {
 
     abstract fun getGroupDao(): GroupDao
     abstract fun getTeacherDao(): TeacherDao
     abstract fun getCachedScheduleDao(): CachedScheduleDao
 
     companion object {
-        fun getDb(context: Context): MainDataBase {
+        @Volatile
+        private var INSTANCE: MainDataBase? = null
 
-            return try {
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    MainDataBase::class.java,
-                    "RaspisanieDB"
-                )
-                    .allowMainThreadQueries()
-                    .build()
-            } catch (e: IllegalStateException) {
-                // Если произошла ошибка (например, миграция не выполнена)
-                context.deleteDatabase("RaspisanieDB")
-                // Повторяем попытку создания базы
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    MainDataBase::class.java,
-                    "RaspisanieDB"
-                )
-                    .allowMainThreadQueries()
-                    .build()
+        fun getInstance(context: Context): MainDataBase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = buildDatabase(context)
+                INSTANCE = instance
+                instance
             }
         }
-    }
 
+        private fun buildDatabase(context: Context): MainDataBase {
+            return Room.databaseBuilder(
+                context.applicationContext,
+                MainDataBase::class.java,
+                "RaspisanieDB"
+            )
+                // Убираем allowMainThreadQueries - это антипаттерн
+                .fallbackToDestructiveMigration() // Разрешаем разрушительную миграцию
+                .build()
+        }
+    }
 }

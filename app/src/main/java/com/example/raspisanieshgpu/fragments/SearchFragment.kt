@@ -9,10 +9,12 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.databaseobj
+import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentSearchBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SearchFragment: Fragment() {
     private lateinit var binding: FragmentSearchBinding
@@ -28,8 +30,6 @@ class SearchFragment: Fragment() {
 
         acAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line)
         binding.actwList.setAdapter(acAdapter)
-
-        val db = databaseobj.database
 
         binding.chipHolder.setOnCheckedStateChangeListener { _, checkedIds ->
            check = when(checkedIds.firstOrNull()){
@@ -57,13 +57,17 @@ class SearchFragment: Fragment() {
 
     private fun checkAndOpenSchedule(name: String, type: String) {
         viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val exists = when (type) {
-                    "group" -> databaseobj.database.getGroupDao().getGroupByName(name) != null
-                    "teacher" -> databaseobj.database.getTeacherDao().getTeacherByName(name) != null
-                    else -> false
-                }
 
+            try {
+                var exists = false
+                withContext(Dispatchers.IO) {
+                    val db = MainDataBase.getInstance(requireContext())
+                    exists = when (type) {
+                        "group" -> db.getGroupDao().getGroupByName(name) != null
+                        "teacher" -> db.getTeacherDao().getTeacherByName(name) != null
+                        else -> false
+                    }
+                }
                 if (exists) {
                     openScheduleFragment(name, type)
                 } else {
@@ -77,7 +81,6 @@ class SearchFragment: Fragment() {
 
     private fun showNotFoundError(type: String) {
         val errorMsg = when (type) {
-            "group" -> getString(R.string.group_not_found)
             "teacher" -> getString(R.string.teacher_not_found)
             else -> getString(R.string.group_not_found)
         }
@@ -93,18 +96,23 @@ class SearchFragment: Fragment() {
     }
 
     private fun updateSpinnerAdapter(type: String) {
-        val db = databaseobj.database
         var itemlist: List<String> = mutableListOf()
 
         viewLifecycleOwner.lifecycleScope.launch {
-           when(type){
-               "group" -> itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }
-               "teacher" -> itemlist = db.getTeacherDao().getAllTeachers().map { tc -> tc.name }
-           }
-        acAdapter.clear()
-        acAdapter.addAll(itemlist)
-        acAdapter.notifyDataSetChanged()
-
+            withContext(Dispatchers.IO){
+                try {
+                    val db = MainDataBase.getInstance(requireContext())
+                    when(type){
+                        "group" -> itemlist = db.getGroupDao().getAllGroups().map { gr -> gr.name }
+                        "teacher" -> itemlist = db.getTeacherDao().getAllTeachers().map { tc -> tc.name }
+                    }
+                    acAdapter.clear()
+                    acAdapter.addAll(itemlist)
+                    acAdapter.notifyDataSetChanged()
+                }catch (e: Exception){
+                    Log.e("SearchFragment", "error", e)
+                }
+            }
         }
     }
 }

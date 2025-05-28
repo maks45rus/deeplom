@@ -8,7 +8,7 @@ import android.widget.BaseExpandableListAdapter
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.databaseobj
+import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentSavedBinding
 import com.example.raspisanieshgpu.databinding.ItemFavoriteBinding
@@ -108,9 +108,9 @@ class SavedFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             groupsList.clear()
             teachersList.clear()
-
-            groupsList.addAll(databaseobj.database.getGroupDao().getFavorites().map { it.name })
-            teachersList.addAll(databaseobj.database.getTeacherDao().getFavorites().map { it.name })
+            val db = MainDataBase.getInstance(requireContext())
+            groupsList.addAll(db.getGroupDao().getFavorites().map { it.name })
+            teachersList.addAll(db.getTeacherDao().getFavorites().map { it.name })
 
             (binding.expandableListView.expandableListAdapter as BaseExpandableListAdapter).notifyDataSetChanged()
 

@@ -15,14 +15,16 @@ import android.widget.Toast
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.databaseobj
+import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
 import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -39,6 +41,7 @@ class RaspisanieFragment : Fragment() {
     private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
     private var currentWeekSchedule: PairsResponse? = null // Кэш расписания для текущей недели
     private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
 
     companion object {
         private const val NAME_SEARCH = "430б"
@@ -102,7 +105,7 @@ class RaspisanieFragment : Fragment() {
         // Обработчик клика по кнопке избранного
         binding.btnFavorite.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                isFavorite = DataManager.toggleFavorite(pairsfor, namesearch)
+                isFavorite = DataManager.toggleFavorite(pairsfor, namesearch,requireContext())
                 updateFavoriteButton(isFavorite)
             }
 
@@ -188,23 +191,23 @@ class RaspisanieFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch{
             startloading()
-            val db = databaseobj.database
+            val db = MainDataBase.getInstance(requireContext())
             try {
                 currentWeekStart = getWeekStartDate(date)
                 val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format),
-                    1, name, type)
+                    1, name, type,requireContext())
 
                 if (newrasp.ok) {
                     currentWeekSchedule = newrasp
                     updateRaspisanie(currentWeekSchedule!!, date)
                     if (isFavorite) {
-                        if(type == "group") db.getGroupDao().setScheduleData(name,convertScheduleToJson(newrasp))
-                        else db.getTeacherDao().setScheduleData(name,convertScheduleToJson(newrasp))
+                        DataManager.saveCachedSchedule(type,name,Gson().toJson(newrasp), requireContext())
+
                     }
                 } else {
                     Log.e("RaspisanieFragment", newrasp.error.toString())
                     if (isFavorite){
-                        currentWeekSchedule = loadSchedule(name, type)
+                        currentWeekSchedule = DataManager.loadCachedSchedule(type, name, requireContext())
                         updateRaspisanie(currentWeekSchedule!!, date)
                     }else{
                         throw Exception("cant found schedule")
@@ -216,14 +219,7 @@ class RaspisanieFragment : Fragment() {
         }
     }
 
-    private suspend fun loadSchedule(name: String, type: String): PairsResponse{
-        val db = databaseobj.database
 
-        return parseCachedSchedule(
-            if(type == "group") db.getGroupDao().getScheduleData(name)
-        else db.getTeacherDao().getScheduleData(name)
-        )
-    }
 
 
     private fun showError(e: Exception) {
@@ -235,23 +231,22 @@ class RaspisanieFragment : Fragment() {
     }
 
     private suspend fun isFavoriteItem(name: String, type: String): Boolean {
-        return try {
-            when (type) {
-                "group" -> databaseobj.database.getGroupDao().getGroupByName(name).isFavorite
-                "teacher" -> databaseobj.database.getTeacherDao().getTeacherByName(name).isFavorite
-                else -> false
+        return withContext(Dispatchers.IO) {
+            try {
+                val db = MainDataBase.getInstance(requireContext())
+                when (type) {
+                    "group" -> db.getGroupDao().getGroupByName(name).isFavorite
+                    "teacher" -> db.getTeacherDao().getTeacherByName(name).isFavorite
+                    else -> false
+                }
+            } catch (e: Exception) {
+                Log.e("RaspisanieFragment", "Error checking favorite status", e)
+                false
             }
-        }catch (e: Exception){
-            Log.e("RaspisanieFragment isf","error: ", e)
-            false
         }
     }
-    private fun convertScheduleToJson(schedule: PairsResponse): String {
-        return Gson().toJson(schedule)
-    }
-    private fun parseCachedSchedule(json: String): PairsResponse {
-        return Gson().fromJson(json, PairsResponse::class.java)
-    }
+
+
 
     private fun changedate(date: LocalDate) {
         binding.textDate.text = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
@@ -259,7 +254,7 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun getWeekStartDate(date: LocalDate): LocalDate {
-        return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+        return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     }
 
     private fun updateRaspisanie(allpairs: PairsResponse, date: LocalDate) {

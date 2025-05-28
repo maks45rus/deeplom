@@ -21,32 +21,19 @@ class WorkManagerHelper(private val context: Context) {
             .build()
 
         val periodicWorkRequest = PeriodicWorkRequestBuilder<ScheduleCheckWorker>(
-            1, TimeUnit.HOURS,
-            5, TimeUnit.MINUTES
+            15, TimeUnit.MINUTES,
         ).setConstraints(constraints).build()
 
-        val oneTimeRequest = OneTimeWorkRequestBuilder<ScheduleCheckWorker>()
-            .setInitialDelay(0, TimeUnit.SECONDS)
-            .build()
 
         workManager.apply {
             cancelUniqueWork("check_work")
             enqueueUniquePeriodicWork(
                 "check_work",
                 ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
+                periodicWorkRequest,
             )
-            enqueue(oneTimeRequest)
         }
 
-        workManager.apply {
-            cancelUniqueWork("schedule_check_work")
-            enqueueUniquePeriodicWork(
-                "schedule_check_work",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
-            )
-            enqueue(oneTimeRequest)
-        }
+
     }
 }

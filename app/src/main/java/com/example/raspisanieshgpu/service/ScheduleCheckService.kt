@@ -18,6 +18,7 @@ class ScheduleCheckService : Service() {
         val notification = createNotification()
         startForeground(1, notification)
 
+        WorkManager
         // Запускаем проверку
         WorkManager.getInstance(this)
             .beginWith(OneTimeWorkRequestBuilder<ScheduleCheckWorker>().build())
@@ -27,18 +28,16 @@ class ScheduleCheckService : Service() {
     }
 
     private fun createNotification(): Notification {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "schedule_check_channel",
-                "Schedule Updates",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Checks for schedule changes"
-            }
-
-            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-                .createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            "schedule_check_channel",
+            "Schedule Updates",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Checks for schedule changes"
         }
+
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+            .createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, "schedule_check_channel")
             .setContentTitle("Schedule Check")

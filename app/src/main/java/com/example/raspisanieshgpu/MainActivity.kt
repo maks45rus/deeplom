@@ -1,6 +1,7 @@
 package com.example.raspisanieshgpu
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -9,12 +10,13 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.databaseobj
+import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.api.DataManager
 import com.example.raspisanieshgpu.fragments.HomeFragment
 import com.example.raspisanieshgpu.fragments.SavedFragment
 import com.example.raspisanieshgpu.fragments.SearchFragment
+import com.example.raspisanieshgpu.service.ScheduleCheckService
 import com.example.raspisanieshgpu.service.WorkManagerHelper
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -34,8 +36,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        databaseobj.initialize(this)
+
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -52,8 +55,8 @@ class MainActivity : AppCompatActivity() {
                     showNoApiIcon()
                     throw Exception("API error")
                 }
-                DataManager.refreshGroups()
-                DataManager.refreshTeachers()
+                DataManager.refreshGroups(applicationContext)
+                DataManager.refreshTeachers(applicationContext)
                 Log.d("DataUpdateMainActivity", "database updated")
 
             } catch (e: Exception) {
@@ -76,6 +79,10 @@ class MainActivity : AppCompatActivity() {
             updateButtonState(R.id.btnSaved)
         }
     }
+
+
+
+
 
 
     private fun showNoInternetIcon() {

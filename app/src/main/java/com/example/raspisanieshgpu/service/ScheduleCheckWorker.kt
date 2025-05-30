@@ -31,6 +31,13 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
 
         return try {
             withContext(Dispatchers.IO) {
+
+//                showNotification(
+//                    "test",
+//                    "testtesttesttesttesttest",
+//
+//                )
+
                 checkForScheduleChanges()
                 Log.d("ScheduleCheckWorker", "Worker finished successfully")
                 Result.success()
@@ -130,7 +137,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         val notificationId = (title + message).hashCode()
 
         val notification = NotificationCompat.Builder(applicationContext, "schedule_changes")
-            .setSmallIcon(R.drawable.baseline_notifications_24)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

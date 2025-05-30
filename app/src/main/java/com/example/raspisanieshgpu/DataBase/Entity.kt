@@ -18,6 +18,7 @@ data class Teacher (
     val scheduleData: String = ""// JSON с данными расписания
 )
 
+
 @Entity(tableName = "Group")
 data class Group (
     @PrimaryKey(autoGenerate = false)

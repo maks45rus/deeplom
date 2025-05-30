@@ -30,6 +30,9 @@ interface TeacherDao {
     @Query("SELECT * FROM Teacher WHERE name = :name")
     suspend fun getTeacherByName(name: String): Teacher
 
+    @Query("SELECT * FROM Teacher WHERE name = :name")
+    suspend fun searchTeachers(name: String): List<Teacher>
+
     @Query("SELECT scheduleData FROM Teacher WHERE name = :name")
     suspend fun getScheduleData(name: String): String
 
@@ -63,6 +66,9 @@ interface GroupDao {
 
     @Query("SELECT * FROM `Group` WHERE name = :name")
     suspend fun getGroupByName(name: String): Group
+
+    @Query("SELECT * FROM `Group` WHERE name = :name")
+    suspend fun searchGroups(name: String): List<Group>
 
     @Query("SELECT scheduleData FROM `Group` WHERE name = :name")
     suspend fun getScheduleData(name: String): String

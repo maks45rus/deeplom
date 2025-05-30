@@ -1,30 +1,40 @@
 <resources>
-    <string name="app_name">rashgpu</string>
-    <string name="search">search</string>
-    <string name="main">main</string>
-    <string name="favorite">favorite</string>
-    <string name="menu">menu</string>
-    <string name="settings">settings</string>
-    <string name="groups">groups</string>
-    <string name="teachers">teachers</string>
-    <string name="find">find</string>
+    <string name="app_name">Schedule SHSPU</string>
+
+    <!-- Bottom Navigation -->
+    <string name="search">Search</string>
+    <string name="main">Main</string>
+    <string name="favorite">Favorites</string>
+    <string name="menu">Menu</string>
+    <string name="settings">Settings</string>
+
+    <!-- Main Screen -->
+    <string name="groups">Groups</string>
+    <string name="teachers">Teachers</string>
+    <string name="find">Find</string>
     <string name="selectchip">Choose group or teacher</string>
+    <string name="groups_header">Groups</string>
+    <string name="teachers_header">Teachers</string>
+
+    <!-- Schedule -->
+    <string name="Monday">Mon</string>
+    <string name="Tuesday">Tue</string>
+    <string name="Wednesday">Wed</string>
+    <string name="Thursday">Thu</string>
+    <string name="Friday">Fri</string>
+    <string name="Saturday">Sat</string>
+    <string name="no_class">No classes</string>
     <string name="scheduleerror">No schedule for this day</string>
-    <string name="todo">TODO</string>
-    <string name="Monday">ПН</string>
-    <string name="Tuesday">ВТ</string>
-    <string name="Wednesday">СР</string>
-    <string name="Thursday">ЧТ</string>
-    <string name="Friday">ПТ</string>
-    <string name="Saturday">СБ</string>
-    <string name="no_class">no class</string>
-    <string name="groups_header">Группы</string>
-    <string name="teachers_header">Преподаватели</string>
-    <string name="error_schedule">Не получилось загрузить расписание :(</string>
-    <string name="group_not_found">Группа не найдена</string>
-    <string name="teacher_not_found">Преподаватель не найден</string>
-    <string name="internet_status">Internet connection status</string>
+
+    <!-- Errors -->
+    <string name="error_schedule">Failed to load schedule :(</string>
+    <string name="group_not_found">Group not found</string>
+    <string name="teacher_not_found">Teacher not found</string>
     <string name="no_internet_connection">No internet connection</string>
-    <string name="no_api_connection">No api connection</string>
+    <string name="no_api_connection">No API connection</string>
+    <string name="internet_status">Internet connection status</string>
+
+    <!-- Other -->
+    <string name="todo">TODO</string>
 
 </resources>

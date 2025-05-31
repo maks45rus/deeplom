@@ -33,6 +33,7 @@
     <string name="no_internet_connection">No internet connection</string>
     <string name="no_api_connection">No API connection</string>
     <string name="internet_status">Internet connection status</string>
+    <string name="schedule_not_available">schedule not available</string>
 
     <!-- Other -->
     <string name="todo">TODO</string>

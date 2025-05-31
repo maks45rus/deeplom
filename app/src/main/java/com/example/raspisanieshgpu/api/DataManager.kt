@@ -6,7 +6,10 @@ import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.DataBase.Group
 import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.DataBase.Teacher
+import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
+import com.example.raspisanieshgpu.api.models.AvailableSchedule
+import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -202,6 +205,10 @@ object DataManager {
         return true
     }
 
+
+
+
+
     suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String, context: Context): PairsResponse {
         var response: PairsResponse
         withContext(Dispatchers.IO) {
@@ -224,23 +231,29 @@ object DataManager {
                 // Возвращаем корректный PairsResponse с флагом ошибки
                 response = PairsResponse(
                     ok = false,
-                    result = emptyList(), // Пустой список как значение по умолчанию
+                    result = AvailableSchedule(
+                        available = false
+                    ), // Пустой список как значение по умолчанию
                     error = e.message ?: "Unknown network error"
                 )
             }
         }
         return response
     }
-    suspend fun saveCachedSchedule(type: String, name: String,schedule: String, context: Context){
-        withContext(Dispatchers.IO) {
+    suspend fun saveCachedSchedule(type: String, name: String, schedule: PairsResponse, context: Context):Boolean{
+
+        return withContext(Dispatchers.IO) {
             try {
+                if(!schedule.ok) throw Exception((schedule.error).toString())
+                if(!schedule.result.available) throw Exception((R.string.schedule_not_available).toString())
                 val db = MainDataBase.getInstance(context)
                 if(type == "group") db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
                 else db.getTeacherDao().setScheduleData(name,Gson().toJson(schedule))
                 Log.d("DataManager", "Schedule for ${name} saved")
+                true
             }catch (e: Exception){
                 Log.e("DataManager", "Schedule for ${name} not saved: ", e)
-
+                false
             }
         }
     }
@@ -248,11 +261,14 @@ object DataManager {
     suspend fun loadCachedSchedule(type: String, name: String, context: Context): PairsResponse {
         var ret = PairsResponse(
             ok = false,
-            result = emptyList(), // Пустой список как значение по умолчанию
+            result = AvailableSchedule(
+                available = false
+            ), // Пустой список как значение по умолчанию
             error = "Unknown network error"
         )
-        withContext(Dispatchers.IO) {
+
             val json: String
+            return withContext(Dispatchers.IO) {
             try {
                 val db = MainDataBase.getInstance(context)
                 json = if (type == "group") {
@@ -260,20 +276,23 @@ object DataManager {
                 } else {
                     db.getTeacherDao().getScheduleData(name)
                 }
-                Log.d("DataManager", "Schedule for ${name} loaded")
+                if(json == "") throw Exception("no cached schedule")
                 ret = Gson().fromJson(json, PairsResponse::class.java)
-
+                Log.d("DataManager", "Schedule for ${name} loaded")
+                ret
             }catch (e: Exception){
                 Log.e("DataManager", "Schedule for ${name} not loaded: ", e)
 
                 ret = PairsResponse(
                     ok = false,
-                    result = emptyList(), // Пустой список как значение по умолчанию
+                    result = AvailableSchedule(
+                        available = false
+                    ), // Пустой список как значение по умолчанию
                     error = e.message ?: "Unknown network error"
                 )
+                ret
             }
         }
-        return ret
     }
 
 }

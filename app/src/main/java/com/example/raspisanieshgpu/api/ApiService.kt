@@ -13,14 +13,14 @@ interface ApiService {
     @GET("index.php?method=teachers.get")
     suspend fun getTeachers(): TeachersResponse
 
-    @GET("index.php?method=pairs.get")
+    @GET("index.php?method=pairs.confirmableGet")
     suspend fun getPairsGroup(
         @Query("date") date: String,
         @Query("week") week: Int,
         @Query("groupId") groupId: Int
     ): PairsResponse
 
-    @GET("index.php?method=pairs.get")
+    @GET("index.php?method=pairs.confirmableGet")
     suspend fun getPairsTeacher(
         @Query("date") date: String,
         @Query("week") week: Int,

@@ -19,6 +19,7 @@ import com.example.raspisanieshgpu.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
 import com.example.raspisanieshgpu.api.DataManager
+import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
 import com.google.gson.Gson
@@ -39,7 +40,7 @@ class RaspisanieFragment : Fragment() {
     private var pairsfor = "group"
     private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
     private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
-    private var currentWeekSchedule: PairsResponse? = null // Кэш расписания для текущей недели
+    private var currentWeekSchedule: List<Date>? = null // Кэш расписания для текущей недели
     private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 
@@ -197,24 +198,35 @@ class RaspisanieFragment : Fragment() {
                 val newrasp = DataManager.fetchPairs(currentWeekStart!!.format(format),
                     1, name, type,requireContext())
 
-                if (newrasp.ok) {
-                    currentWeekSchedule = newrasp
-                    updateRaspisanie(currentWeekSchedule!!, date)
-                    if (isFavorite) {
-                        DataManager.saveCachedSchedule(type,name,Gson().toJson(newrasp), requireContext())
-
-                    }
-                } else {
-                    Log.e("RaspisanieFragment", newrasp.error.toString())
-                    if (isFavorite){
-                        currentWeekSchedule = DataManager.loadCachedSchedule(type, name, requireContext())
-                        updateRaspisanie(currentWeekSchedule!!, date)
-                    }else{
-                        throw Exception("cant found schedule")
-                    }
+                if (!newrasp.ok){
+                    throw Exception((R.string.no_api_connection).toString())
+                }
+                if(!newrasp.result.available) {
+                    throw Exception((R.string.schedule_not_available).toString())
+                }
+                currentWeekSchedule = newrasp.result.days
+                updateRaspisanie(currentWeekSchedule!!, date)
+                if (isFavorite) {
+                    if(!DataManager.saveCachedSchedule(
+                        type,
+                        name,
+                        newrasp,
+                        requireContext()
+                    )) Log.e("RaspisanieFragment","schedule not saved")
                 }
             } catch (e: Exception) {
-                showError(e)
+                if (isFavorite){
+                    try {
+                        val cachedschedule = DataManager.loadCachedSchedule(type, name, requireContext())
+                        if(!cachedschedule.ok or !cachedschedule.result.available) throw Exception(e)
+                        currentWeekSchedule = cachedschedule.result.days
+                        updateRaspisanie(currentWeekSchedule!!, date)
+                    }catch (e: Exception){
+                        showError(e)
+                    }
+                }else{
+                    showError(e)
+                }
             }
         }
     }
@@ -257,12 +269,10 @@ class RaspisanieFragment : Fragment() {
         return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     }
 
-    private fun updateRaspisanie(allpairs: PairsResponse, date: LocalDate) {
+    private fun updateRaspisanie(days: List<Date>, date: LocalDate) {
 
         // Очищаем только 5 пар
         rasp = MutableList(5) { "-" }
-
-        val days = allpairs.result
 
         for (day in days!!) {
             if (day.date == date.format(format)) {

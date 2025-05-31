@@ -75,12 +75,16 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                     1,
                     group.name,
                     "group",
-                    applicationContext
+                    applicationContext,
                 )
 
                 if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                    DataManager.saveCachedSchedule("group",group.name,
-                        Gson().toJson(apiSchedule), applicationContext)
+                    DataManager.saveCachedSchedule(
+                        "group",
+                        group.name,
+                        apiSchedule,
+                        applicationContext,
+                    )
                     showNotification(
                         "Изменение расписания",
                         "Обнаружены изменения в расписании группы ${group.name}"
@@ -103,12 +107,15 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                     1,
                     teacher.name,
                     "teacher",
-                    applicationContext
+                    applicationContext,
                 )
 
                 if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                    DataManager.saveCachedSchedule("teacher",teacher.name,
-                        Gson().toJson(apiSchedule), applicationContext)
+                    DataManager.saveCachedSchedule("teacher",
+                        teacher.name,
+                        apiSchedule,
+                        applicationContext,
+                    )
                     showNotification(
                         "Изменение расписания",
                         "Обнаружены изменения в расписании преподавателя ${teacher.name}"
@@ -125,9 +132,9 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     private fun hasScheduleChanged(cachedJson: String, newSchedule: PairsResponse): Boolean {
-        Log.d("ScheduleCheckWorker", (cachedJson == Gson().toJson(newSchedule)).toString())
+        Log.d("ScheduleCheckWorker", (cachedJson != Gson().toJson(newSchedule)).toString())
 
-        return cachedJson == Gson().toJson(newSchedule)
+        return cachedJson != Gson().toJson(newSchedule)
 
     }
 
@@ -137,7 +144,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         val notificationId = (title + message).hashCode()
 
         val notification = NotificationCompat.Builder(applicationContext, "schedule_changes")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.mipmap.logo_shspu)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

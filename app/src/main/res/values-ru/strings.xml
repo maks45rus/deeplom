@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расписание ШГПУ</string>
+
+    <!-- Bottom Navigation -->
+    <string name="search">Поиск</string>
+    <string name="main">Главная</string>
+    <string name="favorite">Избранное</string>
+    <string name="menu">Меню</string>
+    <string name="settings">Настройки</string>
+
+    <!-- Main Screen -->
+    <string name="groups">Группы</string>
+    <string name="teachers">Преподаватели</string>
+    <string name="find">Найти</string>
+    <string name="selectchip">Выберите группу или преподавателя</string>
+    <string name="groups_header">Группы</string>
+    <string name="teachers_header">Преподаватели</string>
+
+    <!-- Schedule -->
+    <string name="Monday">ПН</string>
+    <string name="Tuesday">ВТ</string>
+    <string name="Wednesday">СР</string>
+    <string name="Thursday">ЧТ</string>
+    <string name="Friday">ПТ</string>
+    <string name="Saturday">СБ</string>
+    <string name="no_class">Нет пар</string>
+    <string name="scheduleerror">Нет расписания на этот день</string>
+
+    <!-- Errors -->
+    <string name="error_schedule">Не удалось загрузить расписание :(</string>
+    <string name="group_not_found">Группа не найдена</string>
+    <string name="teacher_not_found">Преподаватель не найден</string>
+    <string name="no_internet_connection">Нет интернет-соединения</string>
+    <string name="no_api_connection">Нет связи с API</string>
+    <string name="internet_status">Статус интернет-соединения</string>
+    <string name="schedule_not_available">Расписание недоступно</string>
+
+    <!-- Other -->
+    <string name="todo">В разработке</string>
+</resources>

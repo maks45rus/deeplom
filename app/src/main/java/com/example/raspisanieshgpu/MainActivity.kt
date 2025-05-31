@@ -1,26 +1,19 @@
 package com.example.raspisanieshgpu
 
 import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.MainDataBase
-import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.api.DataManager
+import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.fragments.HomeFragment
 import com.example.raspisanieshgpu.fragments.SavedFragment
 import com.example.raspisanieshgpu.fragments.SearchFragment
-import com.example.raspisanieshgpu.service.ScheduleCheckService
 import com.example.raspisanieshgpu.service.WorkManagerHelper
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,7 +25,6 @@ class MainActivity : AppCompatActivity() {
     private val homeFragment = HomeFragment()
     private val savedFragment = SavedFragment()
     private val searchFragment = SearchFragment()
-    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -99,12 +91,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hideNoInternetIcon() {
-        runOnUiThread {
 
-            binding.internetStatusIcon.visibility = android.view.View.GONE
-        }
-    }
 
     private fun isInternetAvailable(): Boolean {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

@@ -11,18 +11,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SearchVM(
-    private val context: Context
+    context: Context
 ) : ViewModel() {
     private val _searchState = MutableLiveData<SearchState>(SearchState.Loading)
     val searchState: LiveData<SearchState> = _searchState
 
 
-    private var _currentType: String = "group"
-    val currentType: String = _currentType
+    private val _currentType = MutableLiveData<String>("group")
+    val currentType: LiveData<String> = _currentType
     private val db = MainDataBase.getInstance(context)
 
     fun setType(type: String) {
-        _currentType = type
+        _currentType.value = type
         loadAll()
     }
 
@@ -39,7 +39,7 @@ class SearchVM(
             _searchState.value = SearchState.Loading
             try {
                 val items = withContext(Dispatchers.IO) {
-                    when (currentType) {
+                    when (currentType.value) {
                         "group" -> db.getGroupDao().getAllGroups().map { it.name }
                         "teacher" -> db.getTeacherDao().getAllTeachers().map { it.name }
                         else -> emptyList()
@@ -57,7 +57,7 @@ class SearchVM(
             _searchState.value = SearchState.Loading
             try {
                 val items = withContext(Dispatchers.IO) {
-                    when (currentType) {
+                    when (currentType.value) {
                         "group" -> db.getGroupDao().getAllGroups()
                             .filter { it.name.contains(query, ignoreCase = true) }
                             .map { it.name }

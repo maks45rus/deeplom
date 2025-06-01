@@ -55,6 +55,7 @@ class RaspisanieFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewModel = RaspisanieVM(requireContext())
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         return binding.root
     }

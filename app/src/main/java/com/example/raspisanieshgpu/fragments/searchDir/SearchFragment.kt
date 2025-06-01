@@ -7,11 +7,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.SearchAdapter
 import com.example.raspisanieshgpu.databinding.FragmentSearchBinding
 import com.example.raspisanieshgpu.fragments.scheduleDir.RaspisanieFragment
+import com.google.android.material.button.MaterialButton
 
 class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
@@ -26,13 +28,6 @@ class SearchFragment : Fragment() {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
         viewModel = SearchVM(requireContext())
 
-        setupAdapter()
-        setupChips()
-        setupSearchInput()
-        observeViewModel()
-
-        // Загружаем начальные данные
-        viewModel.setType("group")
 
         return binding.root
     }
@@ -40,10 +35,11 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        setupChips()
+        setupAdapter()
+        setupButtons()
         setupSearchInput()
-        viewModel.setType("group")
+        observeViewModel()
+
     }
 
     private fun setupAdapter() {
@@ -53,23 +49,17 @@ class SearchFragment : Fragment() {
         binding.searchList.adapter = searchAdapter
     }
 
-    private fun setupChips() {
-        binding.chipGroup.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                binding.chipTeacher.isChecked = false
-                viewModel.setType("group")
-            }
+    private fun setupButtons() {
+        viewModel.setType("group")
+        binding.btnGroup.setOnClickListener {
+            viewModel.setType("group")
         }
 
-        binding.chipTeacher.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                binding.chipGroup.isChecked = false
-                viewModel.setType("teacher")
-            }
+        binding.btnTeacher.setOnClickListener {
+            viewModel.setType("teacher")
         }
 
-        // Выбираем чип по умолчанию
-        binding.chipGroup.isChecked = true
+
     }
 
     private fun setupSearchInput() {
@@ -100,10 +90,37 @@ class SearchFragment : Fragment() {
                 }
             }
         }
+        viewModel.currentType.observe(viewLifecycleOwner) { type ->
+            updateButtonSelection(type)
+        }
+    }
+
+    private fun updateButtonSelection(type: String) {
+        when (type) {
+            "group" -> {
+                setButtonSelected(binding.btnGroup, true)
+                setButtonSelected(binding.btnTeacher, false)
+            }
+            "teacher" -> {
+                setButtonSelected(binding.btnGroup, false)
+                setButtonSelected(binding.btnTeacher, true)
+            }
+        }
+    }
+
+    private fun setButtonSelected(button: MaterialButton, isSelected: Boolean) {
+        button.isSelected = isSelected
+        if (isSelected) {
+            button.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
+            button.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+        } else {
+            button.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.transparent))
+            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
+        }
     }
 
     private fun openScheduleFragment(name: String) {
-        val fr = RaspisanieFragment.send(name, viewModel.currentType)
+        val fr = RaspisanieFragment.send(name, viewModel.currentType.value!!)
         parentFragmentManager.beginTransaction()
             .replace(R.id.main_cont, fr)
             .addToBackStack(null)

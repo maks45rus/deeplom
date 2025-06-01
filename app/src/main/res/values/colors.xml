@@ -29,4 +29,8 @@
     <color name="primaryColor">#6200EE</color>
     <color name="lightGray">#F5F5F5</color>
 
+    <color name="primary_color">#6200EE</color>
+    <color name="primary_dark">#3700B3</color>
+    <color name="primary_light">#BB86FC</color>
+
 </resources>

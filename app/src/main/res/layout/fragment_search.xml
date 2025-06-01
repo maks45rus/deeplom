@@ -13,27 +13,25 @@
         android:layout_marginBottom="16dp"
         android:weightSum="2">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_group"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_group"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/groups"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginEnd="4dp"
-            android:checkable="true"
-            app:checkedIcon="@null"/>
+            app:strokeColor="@color/primary_color" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_teacher"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_teacher"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/teachers"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginStart="4dp"
-            android:checkable="true"
-            app:checkedIcon="@null"/>
+            app:strokeColor="@color/primary_color" />
     </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout

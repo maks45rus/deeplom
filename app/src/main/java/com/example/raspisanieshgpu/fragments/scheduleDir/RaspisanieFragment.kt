@@ -1,7 +1,6 @@
-package com.example.raspisanieshgpu.fragments.Raspisanie
+package com.example.raspisanieshgpu.fragments.scheduleDir
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.content.SharedPreferences
 import android.icu.util.Calendar
 import android.os.Bundle
@@ -14,13 +13,10 @@ import android.widget.DatePicker
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
-import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.PairsAdapter
 import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.databinding.FragmentRaspisanieBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -59,53 +55,58 @@ class RaspisanieFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-
-        viewModel = RaspisanieVM(requireContext())
-
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
-
-        namesearch = arguments?.getString(NAME_SEARCH).toString()
-        pairsfor = arguments?.getString(PAIRS_FOR).toString()
+        return binding.root
+    }
 
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        initArguments()
+        setupAdapter()
+        setupUI()
+        setupClickListeners()
         observeViewModel()
+        loadInitialData()
+    }
 
-        rasisanieAdapter = PairsAdapter(requireContext())
-        binding.raspisanieList.apply {
-            adapter = rasisanieAdapter
+    private fun loadInitialData() {
+        viewModel.checkFavoriteStatus(namesearch, pairsfor)
+        viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(),isFavorite)
+    }
+
+    private fun initArguments() {
+        namesearch = arguments?.getString("NAME_SEARCH") ?: "430б"
+        pairsfor = arguments?.getString("PAIRS_FOR") ?: "group"
+        selectedDate = LocalDate.now().let { date ->
+            if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
         }
+    }
 
-        binding.pairsFor.text = when (pairsfor) { // надпись для кого пара
+    private fun setupAdapter() {
+        rasisanieAdapter = PairsAdapter(requireContext())
+        binding.raspisanieList.adapter = rasisanieAdapter
+    }
+
+    private fun setupUI() {
+        binding.pairsFor.text = when (pairsfor) {
             "teacher" -> formatName(namesearch)
             else -> namesearch.uppercase()
         }
 
-        binding.btnSethome.setImageResource(
-            when (sharedPreferences.getString("home_name", null)) {
-                namesearch -> R.drawable.baseline_home_selected
-                else -> R.drawable.baseline_home_unselected
-            }
-        )
-
-        selectedDate = LocalDate.now()
-        if(selectedDate.dayOfWeek == DayOfWeek.SUNDAY){
-            selectedDate = selectedDate.plusDays(1)
-        }
         currentWeekStart = getWeekStartDate(selectedDate)
         changedate(selectedDate)
         updateButtonState(getDayOfWeekString(selectedDate.dayOfWeek))
+    }
 
-
-        viewModel.checkFavoriteStatus(namesearch,pairsfor)
-        viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(), isFavorite)
-
-
-
-        // Обработчик клика по кнопке избранного
+    private fun setupClickListeners() {
         binding.btnFavorite.setOnClickListener {
-               viewModel.toggleFavorite(namesearch,pairsfor)
+            viewModel.toggleFavorite(namesearch, pairsfor)
+        }
+
+        binding.btnFavorite.setOnClickListener {
+            viewModel.toggleFavorite(namesearch,pairsfor)
         }
 
         binding.btnSethome.setOnClickListener {
@@ -179,7 +180,7 @@ class RaspisanieFragment : Fragment() {
             changedate(selectedDate)
         }
 
-        return binding.root
+        // Остальные слушатели...
     }
 
     private fun observeViewModel() {
@@ -190,31 +191,15 @@ class RaspisanieFragment : Fragment() {
                     updateRaspisanie(state.schedule,selectedDate)
                     currentWeekSchedule = state.schedule
                 }
-                is RaspisanieState.Error -> showError(Exception(state.message))
+                is RaspisanieState.Error -> errorloading(Exception(state.message))
             }
         }
-        viewModel.favoriteState.observe(viewLifecycleOwner) { isFavorite ->
-            updateFavoriteButton(isFavorite)
+        viewModel.favoriteState.observe(viewLifecycleOwner) { _isFavorite ->
+            isFavorite = _isFavorite
+            updateFavoriteButton(_isFavorite)
         }
     }
 
-
-
-    private suspend fun isFavoriteItem(name: String, type: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val db = MainDataBase.getInstance(requireContext())
-                when (type) {
-                    "group" -> db.getGroupDao().getGroupByName(name).isFavorite
-                    "teacher" -> db.getTeacherDao().getTeacherByName(name).isFavorite
-                    else -> false
-                }
-            } catch (e: Exception) {
-                Log.e("RaspisanieFragment", "Error checking favorite status", e)
-                false
-            }
-        }
-    }
 
 
 
@@ -247,7 +232,7 @@ class RaspisanieFragment : Fragment() {
         rasisanieAdapter.clear()
         rasisanieAdapter.addAll(rasp)
         rasisanieAdapter.notifyDataSetChanged()
-        showSchedule()
+        successloading()
     }
 
     private fun formatName(fullName: String): String {
@@ -333,13 +318,13 @@ class RaspisanieFragment : Fragment() {
         binding.errorTextView.visibility = View.GONE
     }
 
-    private fun showSchedule(){
+    private fun successloading(){
         binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.GONE
         binding.raspisanieList.visibility = View.VISIBLE
     }
 
-    private fun showError(e: Exception) {
+    private fun errorloading(e: Exception) {
         Log.e("RaspisanieFragment", "error: ", e)
         binding.errorTextView.text = getString(R.string.error_schedule)
         binding.progressSchedule.visibility = View.GONE

@@ -1,4 +1,4 @@
-package com.example.raspisanieshgpu.fragments.Raspisanie
+package com.example.raspisanieshgpu.fragments.scheduleDir
 
 import com.example.raspisanieshgpu.api.models.Date
 

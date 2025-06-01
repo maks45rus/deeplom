@@ -1,24 +1,25 @@
-package com.example.raspisanieshgpu.fragments
+package com.example.raspisanieshgpu.fragments.favoriteDir
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentSavedBinding
 import com.example.raspisanieshgpu.databinding.ItemFavoriteBinding
 import com.example.raspisanieshgpu.databinding.ItemGroupHeaderBinding
-import com.example.raspisanieshgpu.fragments.Raspisanie.RaspisanieFragment
+import com.example.raspisanieshgpu.fragments.scheduleDir.RaspisanieFragment
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SavedFragment : Fragment() {
 
     private lateinit var binding: FragmentSavedBinding
+    private lateinit var viewModel: SavedVM
     private val groupsList = mutableListOf<String>()
     private val teachersList = mutableListOf<String>()
     private lateinit var headers: List<String>
@@ -28,14 +29,51 @@ class SavedFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewModel = SavedVM(requireContext())
         binding = FragmentSavedBinding.inflate(inflater, container, false)
         headers = listOf(
             getString(R.string.groups_header),
             getString(R.string.teachers_header)
         )
+
         setupExpandableListView()
-        loadFavorites()
+        observeViewModel()
+
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadFavorites()
+    }
+
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            viewModel.favoritesState.collectLatest { state ->
+                when (state) {
+                    is FavoriteState.Loading -> {
+                        startloading()
+                    }
+                    is FavoriteState.Loaded -> {
+                        groupsList.clear()
+                        teachersList.clear()
+                        groupsList.addAll(state.groups)
+                        teachersList.addAll(state.teachers)
+                        (binding.expandableListView.expandableListAdapter as? BaseExpandableListAdapter)
+                            ?.notifyDataSetChanged()
+
+                        // Раскрываем все группы
+                        for (i in headers.indices) {
+                            binding.expandableListView.expandGroup(i)
+                        }
+                        successloading()
+                    }
+                    is FavoriteState.Error -> {
+                        errorloading(Exception(state.message))
+                    }
+                }
+            }
+        }
     }
 
     private fun setupExpandableListView() {
@@ -105,28 +143,31 @@ class SavedFragment : Fragment() {
         }
     }
 
-    private fun loadFavorites() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            groupsList.clear()
-            teachersList.clear()
-            val db = MainDataBase.getInstance(requireContext())
-            groupsList.addAll(db.getGroupDao().getFavorites().map { it.name })
-            teachersList.addAll(db.getTeacherDao().getFavorites().map { it.name })
-
-            (binding.expandableListView.expandableListAdapter as BaseExpandableListAdapter).notifyDataSetChanged()
-
-            // Раскрываем все группы по умолчанию
-            for (i in headers.indices) {
-                binding.expandableListView.expandGroup(i)
-            }
-        }
-    }
-
     private fun openFavoriteSchedule(name: String, type: String) {
         val fr = RaspisanieFragment.send(name, type)
         parentFragmentManager.beginTransaction()
             .replace(R.id.main_cont, fr)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun startloading(){
+        binding.progressSchedule.visibility = View.VISIBLE
+        binding.expandableListView.visibility = View.GONE
+        binding.errorTextView.visibility = View.GONE
+    }
+
+    private fun successloading(){
+        binding.progressSchedule.visibility = View.GONE
+        binding.errorTextView.visibility = View.GONE
+        binding.expandableListView.visibility = View.VISIBLE
+    }
+
+    private fun errorloading(e: Exception) {
+        Log.e("RaspisanieFragment", "error: ", e)
+        binding.errorTextView.text = getString(R.string.error_schedule)
+        binding.progressSchedule.visibility = View.GONE
+        binding.errorTextView.visibility = View.VISIBLE
+        binding.expandableListView.visibility = View.GONE
     }
 }

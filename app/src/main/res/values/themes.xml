@@ -2,13 +2,11 @@
     <!-- Базовая светлая тема (без поддержки темной темы) -->
     <style name="Base.Theme.Raspisanieshgpu" parent="Theme.Material3.Light.NoActionBar">
         <!-- Отключаем Force Dark -->
-        <item name="android:forceDarkAllowed">false</item>
-        <!-- Светлые системные бары -->
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
 
         <!-- Кастомизация цветов -->
         <!-- Добавьте другие цвета по необходимости -->
     </style>
+
+    <style name="Theme.Raspisanieshgpu" parent="Base.Theme.Raspisanieshgpu" />
 
 </resources>

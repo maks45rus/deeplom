@@ -10,8 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.Data.DataManager
 import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.fragments.HomeFragment
-import com.example.raspisanieshgpu.fragments.SavedFragment
-import com.example.raspisanieshgpu.fragments.SearchFragment
+import com.example.raspisanieshgpu.fragments.favoriteDir.SavedFragment
+import com.example.raspisanieshgpu.fragments.searchDir.SearchFragment
 import com.example.raspisanieshgpu.service.WorkManagerHelper
 import kotlinx.coroutines.launch
 

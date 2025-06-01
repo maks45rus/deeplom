@@ -1,7 +1,6 @@
 package com.example.raspisanieshgpu.fragments
 
 
-import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -11,7 +10,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentHomeBinding
-import com.example.raspisanieshgpu.fragments.Raspisanie.RaspisanieFragment
+import com.example.raspisanieshgpu.fragments.scheduleDir.RaspisanieFragment
+import com.example.raspisanieshgpu.fragments.favoriteDir.SavedFragment
 
 class HomeFragment : Fragment() {
 

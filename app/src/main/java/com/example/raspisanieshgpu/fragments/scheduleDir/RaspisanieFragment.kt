@@ -194,9 +194,9 @@ class RaspisanieFragment : Fragment() {
                 is RaspisanieState.Error -> errorloading(Exception(state.message))
             }
         }
-        viewModel.favoriteState.observe(viewLifecycleOwner) { _isFavorite ->
-            isFavorite = _isFavorite
-            updateFavoriteButton(_isFavorite)
+        viewModel.favoriteState.observe(viewLifecycleOwner) { favorite ->
+            isFavorite = favorite
+            updateFavoriteButton(favorite)
         }
     }
 

@@ -11,5 +11,4 @@
         <!-- Добавьте другие цвета по необходимости -->
     </style>
 
-    <style name="Theme.Raspisanieshgpu" parent="Base.Theme.Raspisanieshgpu" />
 </resources>

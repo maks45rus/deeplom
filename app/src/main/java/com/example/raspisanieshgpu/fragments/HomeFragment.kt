@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.FragmentHomeBinding
+import com.example.raspisanieshgpu.fragments.Raspisanie.RaspisanieFragment
 
 class HomeFragment : Fragment() {
 

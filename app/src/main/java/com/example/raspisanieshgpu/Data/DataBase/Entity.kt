@@ -1,4 +1,4 @@
-package com.example.raspisanieshgpu.DataBase
+package com.example.raspisanieshgpu.Data.DataBase
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -1,19 +1,16 @@
-package com.example.raspisanieshgpu.api
+package com.example.raspisanieshgpu.Data
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.Group
-import com.example.raspisanieshgpu.DataBase.MainDataBase
-import com.example.raspisanieshgpu.DataBase.Teacher
+import com.example.raspisanieshgpu.Data.DataBase.Group
+import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
+import com.example.raspisanieshgpu.Data.DataBase.Teacher
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
 import com.example.raspisanieshgpu.api.models.AvailableSchedule
-import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object DataManager {

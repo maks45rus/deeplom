@@ -9,10 +9,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.DataBase.MainDataBase
+import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.adapter.SearchAdapter
 import com.example.raspisanieshgpu.databinding.FragmentSearchBinding
+import com.example.raspisanieshgpu.fragments.Raspisanie.RaspisanieFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,19 +46,25 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupChips() {
-        binding.chipHolder.setOnCheckedStateChangeListener { _, checkedIds ->
-            currentType = when (checkedIds.firstOrNull()) {
-                R.id.chip_group -> {
-                    loadAllGroups()
-                    "group"
-                }
-                R.id.chip_teacher -> {
-                    loadAllTeachers()
-                    "teacher"
-                }
-                else -> ""
+        // Обработчики для каждого Chip
+        binding.chipGroup.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.chipTeacher.isChecked = false
+                currentType = "group"
+                loadAllGroups()
             }
         }
+
+        binding.chipTeacher.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.chipGroup.isChecked = false
+                currentType = "teacher"
+                loadAllTeachers()
+            }
+        }
+
+        // По умолчанию выбираем первую вкладку
+        binding.chipGroup.isChecked = true
     }
 
     private fun setupSearchInput() {

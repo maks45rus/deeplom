@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.api.DataManager
+import com.example.raspisanieshgpu.Data.DataManager
 import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.fragments.HomeFragment
 import com.example.raspisanieshgpu.fragments.SavedFragment

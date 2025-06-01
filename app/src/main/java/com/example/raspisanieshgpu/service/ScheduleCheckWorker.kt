@@ -7,9 +7,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.raspisanieshgpu.DataBase.MainDataBase
+import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import com.example.raspisanieshgpu.R
-import com.example.raspisanieshgpu.api.DataManager
+import com.example.raspisanieshgpu.Data.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +55,6 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         val today = LocalDate.now()
         val weekStart = getWeekStartDate(today).format(format)
 
-        Log.d("ScheduleCheckWorker", "Week start: $weekStart")
 
         // Проверяем избранные группы
         checkGroupsSchedule(weekStart)
@@ -132,8 +131,6 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     private fun hasScheduleChanged(cachedJson: String, newSchedule: PairsResponse): Boolean {
-        Log.d("ScheduleCheckWorker", (cachedJson != Gson().toJson(newSchedule)).toString())
-
         return cachedJson != Gson().toJson(newSchedule)
 
     }

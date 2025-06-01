@@ -6,27 +6,35 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chip_holder"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginBottom="16dp"
-        app:singleSelection="true">
+        android:weightSum="2">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_group"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/groups"
-            style="@style/Widget.MaterialComponents.Chip.Choice"/>
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_marginEnd="4dp"
+            app:checkedIcon="@null"
+            app:checkable="true"/>
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_teacher"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/teachers"
-            style="@style/Widget.MaterialComponents.Chip.Choice"/>
-    </com.google.android.material.chip.ChipGroup>
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_marginStart="4dp"
+            app:checkedIcon="@null"
+            app:checkable="true"/>
+    </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/search_container"

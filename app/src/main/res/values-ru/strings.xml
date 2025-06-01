@@ -36,6 +36,4 @@
     <string name="internet_status">Статус интернет-соединения</string>
     <string name="schedule_not_available">Расписание недоступно</string>
 
-    <!-- Other -->
-    <string name="todo">В разработке</string>
 </resources>

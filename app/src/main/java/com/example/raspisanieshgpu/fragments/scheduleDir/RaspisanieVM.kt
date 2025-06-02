@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import com.example.raspisanieshgpu.Data.DataManager
 import com.example.raspisanieshgpu.R
-import com.example.raspisanieshgpu.api.models.Date
+import com.example.raspisanieshgpu.api.models.AvailableSchedule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,25 +24,28 @@ class RaspisanieVM(
     val scheduleState: LiveData<RaspisanieState> = _scheduleState
 
     private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private var currentWeekStart: LocalDate? = null
-    private var currentWeekSchedule: List<Date>? = null
+    private var scheduleWeekStart: LocalDate? = null
+    private var currentWeekSchedule: AvailableSchedule? = null
     private val _favoriteState = MutableLiveData<Boolean>()
     val favoriteState: LiveData<Boolean> = _favoriteState
+    private val currentWeekStart = LocalDate.now().let { date ->
+        if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
+    }
 
     fun loadScheduleForWeek(
         date: LocalDate,
         name: String,
         type: String,
         context: Context,
-        isFavorite: Boolean
     ) {
         _scheduleState.value = RaspisanieState.Loading
 
         viewModelScope.launch {
+            val isFavorite = isFavoriteItem(name,type)
             try {
-                currentWeekStart = getWeekStartDate(date)
+                scheduleWeekStart = getWeekStartDate(date)
                 val newrasp = DataManager.fetchPairs(
-                    currentWeekStart!!.format(format),
+                    scheduleWeekStart!!.format(format),
                     1,
                     name,
                     type,
@@ -56,26 +59,30 @@ class RaspisanieVM(
                     throw Exception(context.getString(R.string.schedule_not_available))
                 }
 
-                currentWeekSchedule = newrasp.result.days
+                currentWeekSchedule = newrasp.result
 
-                if (isFavorite) {
+                if (isFavorite && currentWeekStart == scheduleWeekStart) {
                     if (!DataManager.saveCachedSchedule(type, name, newrasp, context)) {
                         Log.e("RaspisanieVM", "Schedule not saved")
+                    }else{
+                        Log.e("RaspisanieVM", "Schedule saved")
                     }
                 }
 
-                _scheduleState.value = RaspisanieState.Success(currentWeekSchedule!!)
+                _scheduleState.value = RaspisanieState.Success(
+                    currentWeekSchedule!!.available,
+                    currentWeekSchedule!!.days)
             } catch (e: Exception) {
-                if (isFavorite) {
+                if (isFavorite && currentWeekStart == scheduleWeekStart) {
                     try {
                         val cachedSchedule = DataManager.loadCachedSchedule(type, name, context)
-                        if (!cachedSchedule.ok || !cachedSchedule.result.available) throw Exception(
-                            e
-                        )
+                        if (!cachedSchedule.ok || !cachedSchedule.result.available) throw Exception(e)
 
-                        currentWeekSchedule = cachedSchedule.result.days
+                        currentWeekSchedule = cachedSchedule.result
 
-                        _scheduleState.value = RaspisanieState.Success(currentWeekSchedule!!)
+                        _scheduleState.value = RaspisanieState.Success(
+                            currentWeekSchedule!!.available,
+                            currentWeekSchedule!!.days)
                     } catch (e: Exception) {
                         _scheduleState.value = RaspisanieState.Error(e.message ?: "Unknown error")
                     }
@@ -88,7 +95,14 @@ class RaspisanieVM(
 
     fun checkFavoriteStatus(name: String, type: String) {
         viewModelScope.launch {
-            _favoriteState.value = isFavoriteItem(name, type)
+            try {
+                val isFav = isFavoriteItem(name, type)
+                Log.d("FavoriteCheck", "Checking favorite status for $name ($type): $isFav")
+                _favoriteState.value = isFav
+            } catch (e: Exception) {
+                Log.e("FavoriteCheck", "Error checking favorite status", e)
+                _favoriteState.value = false
+            }
         }
     }
 
@@ -100,16 +114,16 @@ class RaspisanieVM(
     }
 
     private suspend fun isFavoriteItem(name: String, type: String): Boolean {
-        val db = MainDataBase.getInstance(context)
         return withContext(Dispatchers.IO) {
             try {
+                val db = MainDataBase.getInstance(context)
                 when (type) {
                     "group" -> db.getGroupDao().getGroupByName(name).isFavorite
                     "teacher" -> db.getTeacherDao().getTeacherByName(name).isFavorite
                     else -> false
                 }
             } catch (e: Exception) {
-                Log.e("RaspisanieVM", "Error checking favorite status", e)
+                Log.e("FavoriteCheck", "Database error", e)
                 false
             }
         }

@@ -78,17 +78,17 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                 )
 
                 if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                    DataManager.saveCachedSchedule(
-                        "group",
-                        group.name,
-                        apiSchedule,
-                        applicationContext,
-                    )
                     showNotification(
                         "Изменение расписания",
                         "Обнаружены изменения в расписании группы ${group.name}"
                     )
                 }
+                DataManager.saveCachedSchedule(
+                    "group",
+                    group.name,
+                    apiSchedule,
+                    applicationContext,
+                )
             } catch (e: Exception) {
                 Log.e("ScheduleCheckWorker", "Error checking group ${group.name}", e)
             }
@@ -110,16 +110,16 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                 )
 
                 if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                    DataManager.saveCachedSchedule("teacher",
-                        teacher.name,
-                        apiSchedule,
-                        applicationContext,
-                    )
                     showNotification(
                         "Изменение расписания",
                         "Обнаружены изменения в расписании преподавателя ${teacher.name}"
                     )
                 }
+                DataManager.saveCachedSchedule("teacher",
+                    teacher.name,
+                    apiSchedule,
+                    applicationContext,
+                )
             } catch (e: Exception) {
                 Log.e("ScheduleCheckWorker", "Error checking teacher ${teacher.name}", e)
             }

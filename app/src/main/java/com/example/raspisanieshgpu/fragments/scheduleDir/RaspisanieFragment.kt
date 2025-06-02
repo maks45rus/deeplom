@@ -1,6 +1,7 @@
 package com.example.raspisanieshgpu.fragments.scheduleDir
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.SharedPreferences
 import android.icu.util.Calendar
 import android.os.Bundle
@@ -28,12 +29,13 @@ class RaspisanieFragment : Fragment() {
     private lateinit var rasisanieAdapter: ArrayAdapter<String>
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var selectedDate: LocalDate
+    private var available: Boolean = true
     private var isFavorite = false
     private var namesearch = "430б"
     private var pairsfor = "group"
     private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
-    private var currentWeekStart: LocalDate? = null // старт недели для выбранного дня
-    private var currentWeekSchedule: List<Date>? = null // Кэш расписания для текущей недели
+    private lateinit var currentWeekStart: LocalDate
+    private lateinit var currentWeekSchedule: List<Date>
     private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 
@@ -57,6 +59,8 @@ class RaspisanieFragment : Fragment() {
     ): View {
         viewModel = RaspisanieVM(requireContext())
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
+        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+
         return binding.root
     }
 
@@ -73,16 +77,20 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun loadInitialData() {
-        viewModel.checkFavoriteStatus(namesearch, pairsfor)
-        viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(),isFavorite)
+        viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
     }
 
     private fun initArguments() {
-        namesearch = arguments?.getString("NAME_SEARCH") ?: "430б"
-        pairsfor = arguments?.getString("PAIRS_FOR") ?: "group"
+
+        namesearch = arguments?.getString(NAME_SEARCH).toString()
+        pairsfor = arguments?.getString(PAIRS_FOR).toString()
+        viewModel.checkFavoriteStatus(namesearch, pairsfor)
+
         selectedDate = LocalDate.now().let { date ->
             if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
         }
+        currentWeekStart = getWeekStartDate(selectedDate)
+        currentWeekSchedule = emptyList()
     }
 
     private fun setupAdapter() {
@@ -106,82 +114,77 @@ class RaspisanieFragment : Fragment() {
             viewModel.toggleFavorite(namesearch, pairsfor)
         }
 
-        binding.btnFavorite.setOnClickListener {
-            viewModel.toggleFavorite(namesearch,pairsfor)
-        }
-
         binding.btnSethome.setOnClickListener {
             addHome()
         }
 
-        binding.textDate.setOnClickListener {   // переключение даты по календарю
+        binding.textDate.setOnClickListener {
             showDatePicker { selDate ->
-                if (selDate != null) {
-                    selectedDate = selDate
-                    changedate(selectedDate) // Обновляем текст даты
-                    viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(), isFavorite)
+                selDate?.let {
+                    selectedDate = it
+                    changedate(selectedDate)
+                    viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
                 }
             }
         }
 
-        binding.btnPrev.setOnClickListener {   // Пролистывание на неделю назад
-            selectedDate = currentWeekStart!!.minusDays(2)
-            viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(), isFavorite)
-            updateButtonState("Sat")
-            changedate(selectedDate) // Обновляем текст даты
-        }
-
-        binding.btnNext.setOnClickListener {   // Пролистывание на неделю вперед
-            selectedDate = currentWeekStart!!.plusDays(7)
-            viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext(), isFavorite)
+        binding.btnPrev.setOnClickListener {
+            currentWeekStart = currentWeekStart.minusWeeks(1)
+            selectedDate = currentWeekStart
+            viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
             updateButtonState("Mon")
-            changedate(selectedDate) // Обновляем текст даты
+            changedate(selectedDate)
         }
 
+        binding.btnNext.setOnClickListener {
+            currentWeekStart = currentWeekStart.plusWeeks(1)
+            selectedDate = currentWeekStart
+            viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
+            updateButtonState("Mon")
+            changedate(selectedDate)
+        }
 
         binding.date1.setOnClickListener {
-            selectedDate = currentWeekStart!! // Понедельник
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Mon") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Mon")
             changedate(selectedDate)
         }
 
         binding.date2.setOnClickListener {
-            selectedDate = currentWeekStart!!.plusDays(1) // Вторник
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Tue") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart.plusDays(1)
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Tue")
             changedate(selectedDate)
         }
 
         binding.date3.setOnClickListener {
-            selectedDate = currentWeekStart!!.plusDays(2) // Среда
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Wed") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart.plusDays(2)
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Wed")
             changedate(selectedDate)
         }
 
         binding.date4.setOnClickListener {
-            selectedDate = currentWeekStart!!.plusDays(3) // Четверг
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Thu") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart.plusDays(3)
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Thu")
             changedate(selectedDate)
         }
 
         binding.date5.setOnClickListener {
-            selectedDate = currentWeekStart!!.plusDays(4) // Пятница
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Fri") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart.plusDays(4)
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Fri")
             changedate(selectedDate)
         }
 
         binding.date6.setOnClickListener {
-            selectedDate = currentWeekStart!!.plusDays(5) // Суббота
-            updateRaspisanie(currentWeekSchedule!!, selectedDate)
-            updateButtonState("Sat") // Обновляем состояние кнопки
+            selectedDate = currentWeekStart.plusDays(5)
+            updateRaspisanie(currentWeekSchedule, selectedDate)
+            updateButtonState("Sat")
             changedate(selectedDate)
         }
-
-        // Остальные слушатели...
     }
 
     private fun observeViewModel() {
@@ -189,14 +192,21 @@ class RaspisanieFragment : Fragment() {
             when (state) {
                 is RaspisanieState.Loading -> startloading()
                 is RaspisanieState.Success -> {
-                    updateRaspisanie(state.schedule,selectedDate)
-                    currentWeekSchedule = state.schedule
+                    currentWeekStart = getWeekStartDate(selectedDate) // Обновляем начало недели
+                    currentWeekSchedule = state.schedule ?: emptyList()
+                    available = state.available
+                    updateRaspisanie(state.schedule, selectedDate)
                 }
-                is RaspisanieState.Error -> errorloading(Exception(state.message))
+                is RaspisanieState.Error -> {
+                    currentWeekSchedule = emptyList()
+                    available = false
+                    errorloading(Exception(state.message))
+                }
             }
         }
         viewModel.favoriteState.observe(viewLifecycleOwner) { favorite ->
             isFavorite = favorite
+            Log.d("FavoriteStatus", "Favorite status updated: $isFavorite") // Добавим лог
             updateFavoriteButton(favorite)
         }
     }
@@ -213,27 +223,35 @@ class RaspisanieFragment : Fragment() {
         return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     }
 
-    private fun updateRaspisanie(days: List<Date>, date: LocalDate) {
+    private fun updateRaspisanie(days: List<Date>?, date: LocalDate) {
+        try {
+            if(!available) {
+                errorloading(Exception("not available"))
+                return
+            }
+            // Очищаем только 5 пар
+            rasp = MutableList(5) { "-" }
 
-        // Очищаем только 5 пар
-        rasp = MutableList(5) { "-" }
-
-        for (day in days) {
-            if (day.date == date.format(format)) {
-                day.pairs.forEach { para ->
-                    // Убедимся, что номер пары не превышает 5
-                    if (para.num - 1 < 5) {
-                        rasp[para.num - 1] = para.text
+            if (!days.isNullOrEmpty()) {
+                for (day in days) {
+                    if (day.date == date.format(format)) {
+                        day.pairs.forEach { para ->
+                            if (para.num - 1 < 5) {
+                                rasp[para.num - 1] = para.text
+                            }
+                        }
+                        break
                     }
                 }
-                break
             }
-        }
 
-        rasisanieAdapter.clear()
-        rasisanieAdapter.addAll(rasp)
-        rasisanieAdapter.notifyDataSetChanged()
-        successloading()
+            rasisanieAdapter.clear()
+            rasisanieAdapter.addAll(rasp)
+            rasisanieAdapter.notifyDataSetChanged()
+            successloading()
+        } catch (e: Exception) {
+            errorloading(e)
+        }
     }
 
     private fun formatName(fullName: String): String {

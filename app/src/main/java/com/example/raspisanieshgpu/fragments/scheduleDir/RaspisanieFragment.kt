@@ -85,6 +85,7 @@ class RaspisanieFragment : Fragment() {
         namesearch = arguments?.getString(NAME_SEARCH).toString()
         pairsfor = arguments?.getString(PAIRS_FOR).toString()
         viewModel.checkFavoriteStatus(namesearch, pairsfor)
+        updateHomeButton(isHomeItem(namesearch,pairsfor))
 
         selectedDate = LocalDate.now().let { date ->
             if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
@@ -328,7 +329,20 @@ class RaspisanieFragment : Fragment() {
             "Домашняя группа/преподаватель сохранена",
             Toast.LENGTH_SHORT
         ).show()
-        binding.btnSethome.setImageResource(R.drawable.baseline_home_selected)
+        updateHomeButton(isHomeItem(namesearch,pairsfor))
+    }
+
+    private fun updateHomeButton(isHome: Boolean) {
+        binding.btnSethome.setImageResource(
+            if (isHome) R.drawable.baseline_home_selected
+            else R.drawable.baseline_home_unselected
+        )
+    }
+
+    fun isHomeItem(name: String, type: String): Boolean {
+        val homeName = sharedPreferences.getString("home_name", "")
+        val homeType = sharedPreferences.getString("home_type", "")
+        return name == homeName && type == homeType
     }
 
     private fun startloading(){

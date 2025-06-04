@@ -24,7 +24,6 @@
     <string name="Friday">Fri</string>
     <string name="Saturday">Sat</string>
     <string name="no_class">No classes</string>
-    <string name="scheduleerror">No schedule for this day</string>
 
     <!-- Errors -->
     <string name="error_schedule">Failed to load schedule :(</string>

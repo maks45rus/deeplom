@@ -25,10 +25,11 @@
     <string name="Friday">ПТ</string>
     <string name="Saturday">СБ</string>
     <string name="no_class">Нет пар</string>
-    <string name="scheduleerror">Нет расписания на этот день</string>
 
     <!-- Errors -->
     <string name="error_schedule">Не удалось загрузить расписание :(</string>
+    <string name="error_saved">Не удалось загрузить избранное :(</string>
+    <string name="error_search">Не удалось загрузить группы/преподавателей :(</string>
     <string name="group_not_found">Группа не найдена</string>
     <string name="teacher_not_found">Преподаватель не найден</string>
     <string name="no_internet_connection">Нет интернет-соединения</string>

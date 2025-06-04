@@ -74,7 +74,7 @@ class RaspisanieVM(
                     currentWeekSchedule!!.available,
                     currentWeekSchedule!!.days)
             } catch (e: Exception) {
-                if (isFavorite && currentWeekStart == scheduleWeekStart) {
+                if (isFavorite) {
                     try {
                         val cachedSchedule = DataManager.loadCachedSchedule(type, name, context)
                         if (!cachedSchedule.ok || !cachedSchedule.result.available) throw Exception(e)

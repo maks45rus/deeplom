@@ -28,6 +28,8 @@
 
     <!-- Errors -->
     <string name="error_schedule">Failed to load schedule :(</string>
+    <string name="error_saved">Failed to load favorites :(</string>
+    <string name="error_search">Failed to load groups/teachers :(</string>
     <string name="group_not_found">Group not found</string>
     <string name="teacher_not_found">Teacher not found</string>
     <string name="no_internet_connection">No internet connection</string>

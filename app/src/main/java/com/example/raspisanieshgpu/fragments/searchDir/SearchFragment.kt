@@ -141,7 +141,7 @@ class SearchFragment : Fragment() {
 
     private fun errorloading(e: Exception) {
         Log.e("RaspisanieFragment", "error: ", e)
-        binding.errorTextView.text = getString(R.string.error_schedule)
+        binding.errorTextView.text = getString(R.string.error_search)
         binding.progressBar.visibility = View.GONE
         binding.errorTextView.visibility = View.VISIBLE
         binding.searchList.visibility = View.GONE

@@ -165,7 +165,7 @@ class SavedFragment : Fragment() {
 
     private fun errorloading(e: Exception) {
         Log.e("RaspisanieFragment", "error: ", e)
-        binding.errorTextView.text = getString(R.string.error_schedule)
+        binding.errorTextView.text = getString(R.string.error_saved)
         binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.VISIBLE
         binding.expandableListView.visibility = View.GONE

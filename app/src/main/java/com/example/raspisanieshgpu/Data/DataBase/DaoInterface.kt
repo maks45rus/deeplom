@@ -24,29 +24,27 @@ interface TeacherDao {
     @Query("SELECT * FROM Teacher")
     suspend fun getAllTeachers(): List<Teacher>
 
-    @Query("SELECT * FROM Teacher WHERE id = :id")
-    suspend fun getTeacherById(id: Int): Teacher
-
     @Query("SELECT * FROM Teacher WHERE name = :name")
     suspend fun getTeacherByName(name: String): Teacher
 
-    @Query("SELECT * FROM Teacher WHERE name = :name")
-    suspend fun searchTeachers(name: String): List<Teacher>
-
     @Query("SELECT scheduleData FROM Teacher WHERE name = :name")
     suspend fun getScheduleData(name: String): String
+
+    @Query("SELECT weekStartDate FROM Teacher WHERE name = :name")
+    suspend fun getWeekStartDate(name: String): String
 
     @Query("UPDATE Teacher SET isFavorite = :isFavorite WHERE name = :name")
     suspend fun setFavoriteStatus(name: String, isFavorite: Boolean)
 
     @Query("UPDATE Teacher SET scheduleData = :scheduleData WHERE name = :name")
     suspend fun setScheduleData(name: String, scheduleData: String)
+
+    @Query("UPDATE Teacher SET weekStartDate = :weekStartDate WHERE name = :name")
+    suspend fun setWeekStartDate(name: String, weekStartDate: String)
 }
 
 @Dao
 interface GroupDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(group: Group)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(groups: List<Group>)
@@ -73,24 +71,18 @@ interface GroupDao {
     @Query("SELECT scheduleData FROM `Group` WHERE name = :name")
     suspend fun getScheduleData(name: String): String
 
+
     @Query("UPDATE `Group` SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun setFavoriteStatus(id: Int, isFavorite: Boolean)
 
     @Query("UPDATE `Group` SET scheduleData = :scheduleData WHERE name = :name")
     suspend fun setScheduleData(name: String, scheduleData: String)
 
+    @Query("UPDATE `Group` SET weekStartDate = :weekStartDate WHERE name = :name")
+    suspend fun setWeekStartDate(name: String, weekStartDate: String)
+
 }
 
-@Dao
-interface CachedScheduleDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(schedule: CachedSchedule)
 
-    @Query("SELECT * FROM CachedSchedule WHERE entityId = :entityId AND entityType = :entityType AND weekStartDate = :weekStartDate")
-    suspend fun getSchedule(entityId: Int, entityType: String, weekStartDate: String): CachedSchedule?
-
-    @Query("DELETE FROM CachedSchedule WHERE entityId = :entityId AND entityType = :entityType")
-    suspend fun deleteForEntity(entityId: Int, entityType: String)
-}
 
 

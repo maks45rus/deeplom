@@ -13,9 +13,9 @@ data class Teacher (
     @ColumnInfo(name = "isFavorite", defaultValue = "0")  // 0 = false, 1 = true
     var isFavorite: Boolean = false,
     @ColumnInfo(name = "weekStartDate", defaultValue = "")
-    val weekStartDate: String = "", // Дата начала недели в формате yyyy-MM-dd
+    val weekStartDate: String = "",
     @ColumnInfo(name = "scheduleData", defaultValue = "")
-    val scheduleData: String = ""// JSON с данными расписания
+    val scheduleData: String = ""
 )
 
 
@@ -32,13 +32,4 @@ data class Group (
     @ColumnInfo(name = "scheduleData", defaultValue = "")
     val scheduleData: String = ""// JSON с данными расписания
 
-)
-
-@Entity(tableName = "CachedSchedule")
-data class CachedSchedule(
-    @PrimaryKey
-    val entityId: Int, // ID группы или преподавателя
-    val entityType: String, // "group" или "teacher"
-    val weekStartDate: String, // Дата начала недели в формате yyyy-MM-dd
-    val scheduleData: String // JSON с данными расписания
 )

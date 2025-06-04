@@ -7,7 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("index.php?method=groups.get")
+    @GET("index.php?method=groups.get&source=AndroidSchedule")
     suspend fun getGroups(): GroupsResponse
 
     @GET("index.php?method=teachers.get")
@@ -26,5 +26,4 @@ interface ApiService {
         @Query("week") week: Int,
         @Query("teacherId") teacherId: Int
     ): PairsResponse
-
 }

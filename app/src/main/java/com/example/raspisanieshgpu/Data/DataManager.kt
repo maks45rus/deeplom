@@ -8,6 +8,7 @@ import com.example.raspisanieshgpu.Data.DataBase.Teacher
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
 import com.example.raspisanieshgpu.api.models.AvailableSchedule
+import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -237,15 +238,21 @@ object DataManager {
         }
         return response
     }
-    suspend fun saveCachedSchedule(type: String, name: String, schedule: PairsResponse, context: Context):Boolean{
+    suspend fun saveCachedSchedule(type: String, name: String, schedule: PairsResponse, weekStart: String, context: Context):Boolean{
 
         return withContext(Dispatchers.IO) {
             try {
                 if(!schedule.ok) throw Exception((schedule.error).toString())
                 if(!schedule.result.available) throw Exception((R.string.schedule_not_available).toString())
                 val db = MainDataBase.getInstance(context)
-                if(type == "group") db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
-                else db.getTeacherDao().setScheduleData(name,Gson().toJson(schedule))
+                if(type == "group"){
+                    db.getGroupDao().setWeekStartDate(name, weekStart)
+                    db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
+                }
+                else{
+                    db.getTeacherDao().setWeekStartDate(name, weekStart)
+                    db.getTeacherDao().setScheduleData(name,Gson().toJson(schedule))
+                }
                 Log.d("DataManager", "Schedule for ${name} saved")
                 true
             }catch (e: Exception){

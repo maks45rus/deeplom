@@ -43,9 +43,10 @@ class RaspisanieVM(
         viewModelScope.launch {
             val isFavorite = isFavoriteItem(name,type)
             try {
-                scheduleWeekStart = getWeekStartDate(date)
+               scheduleWeekStart = getWeekStartDate(date)
+                val weekStart = scheduleWeekStart!!.format(format)
                 val newrasp = DataManager.fetchPairs(
-                    scheduleWeekStart!!.format(format),
+                    weekStart,
                     1,
                     name,
                     type,
@@ -62,7 +63,7 @@ class RaspisanieVM(
                 currentWeekSchedule = newrasp.result
 
                 if (isFavorite && currentWeekStart == scheduleWeekStart) {
-                    if (!DataManager.saveCachedSchedule(type, name, newrasp, context)) {
+                    if (!DataManager.saveCachedSchedule(type, name, newrasp,weekStart, context)) {
                         Log.e("RaspisanieVM", "Schedule not saved")
                     }else{
                         Log.e("RaspisanieVM", "Schedule saved")

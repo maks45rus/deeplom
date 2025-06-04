@@ -77,16 +77,18 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                     applicationContext,
                 )
 
-                if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                    showNotification(
-                        "Изменение расписания",
-                        "Обнаружены изменения в расписании группы ${group.name}"
-                    )
+
+                if (weekStart == group.weekStartDate && apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
+                        showNotification(
+                            "Изменение расписания",
+                            "Обнаружены изменения в расписании группы ${group.name}"
+                        )
                 }
                 DataManager.saveCachedSchedule(
                     "group",
                     group.name,
                     apiSchedule,
+                    weekStart,
                     applicationContext,
                 )
             } catch (e: Exception) {
@@ -109,7 +111,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                     applicationContext,
                 )
 
-                if (apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
+                if (weekStart == teacher.weekStartDate && apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
                     showNotification(
                         "Изменение расписания",
                         "Обнаружены изменения в расписании преподавателя ${teacher.name}"
@@ -118,6 +120,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                 DataManager.saveCachedSchedule("teacher",
                     teacher.name,
                     apiSchedule,
+                    weekStart,
                     applicationContext,
                 )
             } catch (e: Exception) {
@@ -131,6 +134,9 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     private fun hasScheduleChanged(cachedJson: String, newSchedule: PairsResponse): Boolean {
+        if(cachedJson == ""){
+            return false
+        }
         return cachedJson != Gson().toJson(newSchedule)
 
     }

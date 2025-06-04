@@ -7,15 +7,14 @@ import androidx.room.RoomDatabase
 
 
 @Database(
-    entities = [Teacher::class, Group::class, CachedSchedule::class],
+    entities = [Teacher::class, Group::class],
     version = 1,
-    exportSchema = false // Отключаем экспорт схемы, если не используете миграции
+    exportSchema = false
 )
 abstract class MainDataBase : RoomDatabase() {
 
     abstract fun getGroupDao(): GroupDao
     abstract fun getTeacherDao(): TeacherDao
-    abstract fun getCachedScheduleDao(): CachedScheduleDao
 
     companion object {
         @Volatile
@@ -28,15 +27,12 @@ abstract class MainDataBase : RoomDatabase() {
                 instance
             }
         }
-
         private fun buildDatabase(context: Context): MainDataBase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 MainDataBase::class.java,
                 "RaspisanieDB"
-            )
-                // Убираем allowMainThreadQueries - это антипаттерн
-                .fallbackToDestructiveMigration() // Разрешаем разрушительную миграцию
+            )   .fallbackToDestructiveMigration()
                 .build()
         }
     }

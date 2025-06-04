@@ -358,8 +358,9 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun errorloading(e: Exception) {
+
         Log.e("RaspisanieFragment", "error: ", e)
-        binding.errorTextView.text = getString(R.string.error_schedule)
+        binding.errorTextView.text = getString(R.string.schedule_not_available)
         binding.progressSchedule.visibility = View.GONE
         binding.errorTextView.visibility = View.VISIBLE
         binding.raspisanieList.visibility = View.GONE

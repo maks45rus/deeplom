@@ -111,11 +111,11 @@ class SearchFragment : Fragment() {
     private fun setButtonSelected(button: MaterialButton, isSelected: Boolean) {
         button.isSelected = isSelected
         if (isSelected) {
-            button.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
+            button.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.green_light))
             button.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
         } else {
             button.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.transparent))
-            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
+            button.setTextColor(ContextCompat.getColor(requireContext(), R.color.green_light))
         }
     }
 

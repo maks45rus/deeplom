@@ -21,7 +21,7 @@
             android:text="@string/groups"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginEnd="4dp"
-            app:strokeColor="@color/primary_color" />
+            app:strokeColor="@color/green_light" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_teacher"
@@ -31,7 +31,7 @@
             android:text="@string/teachers"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginStart="4dp"
-            app:strokeColor="@color/primary_color" />
+            app:strokeColor="@color/green_light" />
     </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout

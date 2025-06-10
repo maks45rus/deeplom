@@ -21,7 +21,7 @@ class WorkManagerHelper(private val context: Context) {
             .build()
 
         val periodicWorkRequest = PeriodicWorkRequestBuilder<ScheduleCheckWorker>(
-            15, TimeUnit.MINUTES,
+            30, TimeUnit.MINUTES,
         ).setConstraints(constraints).build()
 
 

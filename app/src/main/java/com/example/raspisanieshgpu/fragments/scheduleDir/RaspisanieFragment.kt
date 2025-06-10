@@ -193,7 +193,7 @@ class RaspisanieFragment : Fragment() {
             when (state) {
                 is RaspisanieState.Loading -> startloading()
                 is RaspisanieState.Success -> {
-                    currentWeekStart = getWeekStartDate(selectedDate) // Обновляем начало недели
+                    currentWeekStart = getWeekStartDate(selectedDate)
                     currentWeekSchedule = state.schedule ?: emptyList()
                     available = state.available
                     updateRaspisanie(state.schedule, selectedDate)
@@ -207,7 +207,7 @@ class RaspisanieFragment : Fragment() {
         }
         viewModel.favoriteState.observe(viewLifecycleOwner) { favorite ->
             isFavorite = favorite
-            Log.d("FavoriteStatus", "Favorite status updated: $isFavorite") // Добавим лог
+            Log.d("FavoriteStatus", "Favorite status updated: $isFavorite")
             updateFavoriteButton(favorite)
         }
     }
@@ -221,6 +221,7 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun getWeekStartDate(date: LocalDate): LocalDate {
+        date.dayOfWeek
         return date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     }
 
@@ -301,7 +302,10 @@ class RaspisanieFragment : Fragment() {
 
     private fun updateFavoriteButton(fav: Boolean) {
         binding.btnFavorite.setImageResource(
-            if (fav) R.drawable.baseline_star_24_selected
+            if (fav){
+                viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
+                R.drawable.baseline_star_24_selected
+            }
             else R.drawable.baseline_star_24_unselected
         )
     }

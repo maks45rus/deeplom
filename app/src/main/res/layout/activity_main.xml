@@ -22,7 +22,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-
+            <TextView
+                android:id="@+id/version_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:gravity="center"
+                android:text="v"
+                android:layout_margin="5dp"
+                android:textColor="@color/green_gray"/>
 
 
         </androidx.appcompat.widget.Toolbar>

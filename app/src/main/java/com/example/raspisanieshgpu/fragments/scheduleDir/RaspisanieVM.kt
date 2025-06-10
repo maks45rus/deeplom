@@ -111,6 +111,7 @@ class RaspisanieVM(
         viewModelScope.launch {
             val newState = DataManager.toggleFavorite(type, name, context)
             _favoriteState.value = newState
+
         }
     }
 

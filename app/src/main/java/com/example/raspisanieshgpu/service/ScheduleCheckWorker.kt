@@ -76,8 +76,6 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
                     "group",
                     applicationContext,
                 )
-
-
                 if (weekStart == group.weekStartDate && apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
                         showNotification(
                             "Изменение расписания",

@@ -138,6 +138,7 @@ object DataManager {
 
     suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String, context: Context): PairsResponse {
         var response: PairsResponse
+        val id: Int
         withContext(Dispatchers.IO) {
             try {
                 val db = MainDataBase.getInstance(context)
@@ -200,8 +201,8 @@ object DataManager {
             error = "Unknown network error"
         )
 
-            val json: String
-            return withContext(Dispatchers.IO) {
+        val json: String
+        return withContext(Dispatchers.IO) {
             try {
                 val db = MainDataBase.getInstance(context)
                 json = if (type == "group") {
@@ -212,17 +213,11 @@ object DataManager {
                 if(json == "") throw Exception("no cached schedule")
                 ret = Gson().fromJson(json, PairsResponse::class.java)
                 Log.d("DataManager", "Schedule for ${name} loaded")
+
                 ret
             }catch (e: Exception){
                 Log.e("DataManager", "Schedule for ${name} not loaded: ", e)
 
-                ret = PairsResponse(
-                    ok = false,
-                    result = AvailableSchedule(
-                        available = false
-                    ), // Пустой список как значение по умолчанию
-                    error = e.message ?: "Unknown network error"
-                )
                 ret
             }
         }

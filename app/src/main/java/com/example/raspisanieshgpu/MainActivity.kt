@@ -27,15 +27,16 @@ class MainActivity : AppCompatActivity() {
     private val searchFragment = SearchFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         workManagerHelper = WorkManagerHelper(this)
         workManagerHelper.setupScheduleCheckWorker()
+
+
+        val pk = packageManager.getPackageInfo(packageName, 0)
+        binding.versionName.text = "${pk.versionName}"
 
         lifecycleScope.launch {
             try {

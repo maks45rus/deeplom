@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Teacher::class, Group::class],
-    version = 2, // Увеличиваем версию
+    version = 2,
     exportSchema = true
 )
 abstract class MainDataBase : RoomDatabase() {
@@ -37,7 +37,7 @@ abstract class MainDataBase : RoomDatabase() {
                 MainDataBase::class.java,
                 "RaspisanieDB"
             )
-                .fallbackToDestructiveMigration() // На случай ошибки
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

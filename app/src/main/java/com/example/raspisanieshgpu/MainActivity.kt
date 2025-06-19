@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             updateButtonState(R.id.btnSaved)
         }
     }
-    
+
 
 
     private fun showNoInternetIcon() {

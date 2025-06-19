@@ -149,6 +149,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date1.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Mon")
@@ -156,6 +157,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date2.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart.plusDays(1)
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Tue")
@@ -163,6 +165,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date3.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart.plusDays(2)
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Wed")
@@ -170,6 +173,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date4.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart.plusDays(3)
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Thu")
@@ -177,6 +181,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date5.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart.plusDays(4)
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Fri")
@@ -184,6 +189,7 @@ class RaspisanieFragment : Fragment() {
         }
 
         binding.date6.setOnClickListener {
+            if(isLoading)return@setOnClickListener
             selectedDate = currentWeekStart.plusDays(5)
             updateRaspisanie(currentWeekSchedule, selectedDate)
             updateButtonState("Sat")

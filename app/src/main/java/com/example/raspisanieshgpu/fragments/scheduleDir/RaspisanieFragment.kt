@@ -29,6 +29,8 @@ class RaspisanieFragment : Fragment() {
     private lateinit var rasisanieAdapter: ArrayAdapter<String>
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var selectedDate: LocalDate
+    private lateinit var currentDate: LocalDate
+    private var isLoading = false
     private var available: Boolean = true
     private var isFavorite = false
     private var namesearch = "430б"
@@ -77,7 +79,7 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun loadInitialData() {
-        viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
+        viewModel.loadScheduleForWeek(currentDate, namesearch, pairsfor, requireContext())
     }
 
     private fun initArguments() {
@@ -86,10 +88,11 @@ class RaspisanieFragment : Fragment() {
         pairsfor = arguments?.getString(PAIRS_FOR).toString()
         viewModel.checkFavoriteStatus(namesearch, pairsfor)
         updateHomeButton(isHomeItem(namesearch,pairsfor))
-
-        selectedDate = LocalDate.now().let { date ->
+        currentDate = LocalDate.now().let { date ->
             if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
         }
+        selectedDate = currentDate
+
         currentWeekStart = getWeekStartDate(selectedDate)
         currentWeekSchedule = emptyList()
     }
@@ -191,23 +194,29 @@ class RaspisanieFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.scheduleState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is RaspisanieState.Loading -> startloading()
+                is RaspisanieState.Loading -> {
+                    isLoading = true
+                    startloading()
+                }
                 is RaspisanieState.Success -> {
                     currentWeekStart = getWeekStartDate(selectedDate)
                     currentWeekSchedule = state.schedule ?: emptyList()
                     available = state.available
                     updateRaspisanie(state.schedule, selectedDate)
+                    isLoading = false
                 }
                 is RaspisanieState.Error -> {
                     currentWeekSchedule = emptyList()
                     available = false
                     errorloading(Exception(state.message))
+                    isLoading = false
                 }
             }
         }
         viewModel.favoriteState.observe(viewLifecycleOwner) { favorite ->
             isFavorite = favorite
             Log.d("FavoriteStatus", "Favorite status updated: $isFavorite")
+            if(isFavorite)loadInitialData()
             updateFavoriteButton(favorite)
         }
     }

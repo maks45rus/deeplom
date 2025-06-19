@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.raspisanieshgpu.Data.DataManager
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        hideSystemUI()
         workManagerHelper = WorkManagerHelper(this)
         workManagerHelper.setupScheduleCheckWorker()
 
@@ -43,10 +45,6 @@ class MainActivity : AppCompatActivity() {
                 if(!isInternetAvailable()){
                     showNoInternetIcon()
                     throw Exception("internet error")
-                }
-                if(!DataManager.isApiAvailable()){
-                    showNoApiIcon()
-                    throw Exception("API error")
                 }
                 DataManager.refreshGroups(applicationContext)
                 DataManager.refreshTeachers(applicationContext)
@@ -74,7 +72,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
+    private fun hideSystemUI() {
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
+    }
 
 
 
@@ -85,12 +92,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showNoApiIcon() {
-        runOnUiThread {
-            binding.errorTextMain.text = getString(R.string.no_api_connection)
-            binding.internetStatusIcon.visibility = android.view.View.VISIBLE
-        }
-    }
 
 
 

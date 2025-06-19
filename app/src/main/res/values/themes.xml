@@ -1,12 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Базовая светлая тема (без поддержки темной темы) -->
     <style name="Base.Theme.Raspisanieshgpu" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Отключаем Force Dark -->
 
-        <!-- Кастомизация цветов -->
-        <!-- Добавьте другие цвета по необходимости -->
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- Для выреза под камеру -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="28">shortEdges</item>
+
+        <item name="android:statusBarColor">@color/green_gray</item>
+        <item name="android:navigationBarColor">@color/green_gray</item>
     </style>
 
     <style name="Theme.Raspisanieshgpu" parent="Base.Theme.Raspisanieshgpu" />
-
 </resources>

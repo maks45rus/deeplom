@@ -31,5 +31,16 @@ data class Group (
     val weekStartDate: String = "", // Дата начала недели в формате yyyy-MM-dd
     @ColumnInfo(name = "scheduleData", defaultValue = "")
     val scheduleData: String = ""// JSON с данными расписания
+)
 
+@Entity(tableName = "SavedOther")
+data class SavedOther (
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0,
+    @ColumnInfo(name = "name")
+    var name: String,
+    @ColumnInfo(name = "weekStartDate", defaultValue = "")
+    val weekStartDate: String = "", // Дата начала недели в формате yyyy-MM-dd
+    @ColumnInfo(name = "scheduleData", defaultValue = "")
+    val scheduleData: String = ""// JSON с данными расписания
 )

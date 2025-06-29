@@ -12,9 +12,11 @@
     <string name="groups">Groups</string>
     <string name="teachers">Teachers</string>
     <string name="find">Find</string>
+    <string name="open_search">open search</string>
     <string name="selectchip">Choose group or teacher</string>
     <string name="groups_header">Groups</string>
     <string name="teachers_header">Teachers</string>
+    <string name="others_header">Others</string>
 
     <!-- Schedule -->
     <string name="Monday">Mon</string>
@@ -24,6 +26,10 @@
     <string name="Friday">Fri</string>
     <string name="Saturday">Sat</string>
     <string name="no_class">No classes</string>
+    <string name="schedule_change_title">Schedule Update</string>
+    <string name="schedule_change_message">Changes detected in schedule for %1$s %2$s</string>
+    <string name="group_type">group</string>
+    <string name="teacher_type">teacher</string>
 
     <!-- Errors -->
     <string name="error_schedule">Failed to load schedule :(</string>

@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 
 
 @Dao
@@ -81,6 +80,39 @@ interface GroupDao {
     @Query("UPDATE `Group` SET weekStartDate = :weekStartDate WHERE name = :name")
     suspend fun setWeekStartDate(name: String, weekStartDate: String)
 
+}
+
+@Dao
+interface SavedOtherDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(savedOther: SavedOther)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(savedOther: List<SavedOther>)
+
+    @Query("DELETE FROM SavedOther")
+    suspend fun deleteAll()
+
+    @Query("DELETE FROM SavedOther WHERE name = :name")
+    suspend fun deleteSavedOther(name: String)
+
+    @Query("SELECT * FROM SavedOther")
+    suspend fun getAllSavedOther(): List<SavedOther>
+
+    @Query("SELECT * FROM SavedOther WHERE name = :name")
+    suspend fun getSavedOther(name: String): SavedOther
+
+    @Query("SELECT scheduleData FROM SavedOther WHERE name = :name")
+    suspend fun getScheduleData(name: String): String
+
+    @Query("SELECT weekStartDate FROM SavedOther WHERE name = :name")
+    suspend fun getWeekStartDate(name: String): String
+
+    @Query("UPDATE SavedOther SET scheduleData = :scheduleData WHERE name = :name")
+    suspend fun setScheduleData(name: String, scheduleData: String)
+
+    @Query("UPDATE SavedOther SET weekStartDate = :weekStartDate WHERE name = :name")
+    suspend fun setWeekStartDate(name: String, weekStartDate: String)
 }
 
 

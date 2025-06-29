@@ -26,4 +26,11 @@ interface ApiService {
         @Query("week") week: Int,
         @Query("teacherId") teacherId: Int
     ): PairsResponse
+
+    @GET("index.php?method=pairs.confirmableGet")
+    suspend fun getPairsQuery(
+        @Query("date") date: String,
+        @Query("week") week: Int,
+        @Query("query") query: String
+    ): PairsResponse
 }

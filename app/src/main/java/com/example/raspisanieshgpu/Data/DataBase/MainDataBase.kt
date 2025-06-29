@@ -4,19 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 
 
 @Database(
-    entities = [Teacher::class, Group::class],
-    version = 2,
+    entities = [Teacher::class, Group::class, SavedOther::class],
+    version = 4,
     exportSchema = true
 )
 abstract class MainDataBase : RoomDatabase() {
 
     abstract fun getGroupDao(): GroupDao
     abstract fun getTeacherDao(): TeacherDao
+    abstract fun getSavedOtherDao(): SavedOtherDao
 
 
     companion object {

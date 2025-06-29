@@ -5,10 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.example.raspisanieshgpu.R
 
 class ScheduleCheckService : Service() {
@@ -17,12 +14,6 @@ class ScheduleCheckService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = createNotification()
         startForeground(1, notification)
-
-        WorkManager
-        // Запускаем проверку
-        WorkManager.getInstance(this)
-            .beginWith(OneTimeWorkRequestBuilder<ScheduleCheckWorker>().build())
-            .enqueue()
 
         return START_NOT_STICKY
     }

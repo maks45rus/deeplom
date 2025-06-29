@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,11 +8,14 @@
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="48dp"
         android:orientation="horizontal"
-        android:layout_marginBottom="16dp"
-        android:weightSum="2">
+        android:weightSum="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_group"
@@ -21,6 +24,10 @@
             android:layout_height="match_parent"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
+            app:icon="@drawable/baseline_school_24"
+            app:iconTint="#9E9E9E"
+            app:iconSize="24dp"
+            app:iconGravity="textTop"
             android:text="@string/groups"
             android:textColor="#9E9E9E"
             android:textSize="12sp"
@@ -33,6 +40,10 @@
             android:layout_height="match_parent"
             android:layout_marginStart="4dp"
             android:layout_weight="1"
+            app:icon="@drawable/baseline_person_24"
+            app:iconTint="#9E9E9E"
+            app:iconSize="24dp"
+            app:iconGravity="textTop"
             android:text="@string/teachers"
             android:textColor="#9E9E9E"
             android:textSize="12sp"
@@ -42,10 +53,13 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/search_container"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:hint="@string/search"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:layout_editor_absoluteX="16dp">
 
         <EditText
             android:id="@+id/search_input"
@@ -53,16 +67,48 @@
             android:layout_height="50dp"
             android:imeOptions="actionSearch"
             android:inputType="text" />
+
+
     </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/free_search_checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:text="@string/open_search"
+        android:textColor="#3A3A3A"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@+id/search_container"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search_button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/search"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:backgroundTint="@color/green_light"
+        android:visibility="gone"
+        app:cornerRadius="8dp"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/free_search_checkbox" />
 
     <ListView
         android:id="@+id/search_list"
         android:layout_width="match_parent"
-        android:visibility="visible"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
+        android:layout_height="0dp"
+        android:layout_margin="5dp"
         android:divider="@null"
-        android:dividerHeight="8dp"/>
+        android:dividerHeight="8dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_button" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -88,4 +134,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

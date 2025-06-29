@@ -22,6 +22,7 @@ class SavedFragment : Fragment() {
     private lateinit var viewModel: SavedVM
     private val groupsList = mutableListOf<String>()
     private val teachersList = mutableListOf<String>()
+    private val othersList = mutableListOf<String>()
     private lateinit var headers: List<String>
 
     override fun onCreateView(
@@ -29,11 +30,12 @@ class SavedFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel = SavedVM(requireContext())
+        viewModel = SavedVM()
         binding = FragmentSavedBinding.inflate(inflater, container, false)
         headers = listOf(
             getString(R.string.groups_header),
-            getString(R.string.teachers_header)
+            getString(R.string.teachers_header),
+            getString(R.string.others_header)
         )
 
         setupExpandableListView()
@@ -44,7 +46,7 @@ class SavedFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadFavorites()
+        viewModel.loadFavorites(requireContext())
     }
 
     private fun observeViewModel() {
@@ -57,8 +59,10 @@ class SavedFragment : Fragment() {
                     is FavoriteState.Loaded -> {
                         groupsList.clear()
                         teachersList.clear()
+                        othersList.clear()
                         groupsList.addAll(state.groups)
                         teachersList.addAll(state.teachers)
+                        othersList.addAll(state.others)
                         (binding.expandableListView.expandableListAdapter as? BaseExpandableListAdapter)
                             ?.notifyDataSetChanged()
 
@@ -84,6 +88,7 @@ class SavedFragment : Fragment() {
             override fun getChildrenCount(groupPosition: Int): Int = when (groupPosition) {
                 0 -> groupsList.size
                 1 -> teachersList.size
+                2 -> othersList.size
                 else -> 0
             }
 
@@ -91,6 +96,7 @@ class SavedFragment : Fragment() {
             override fun getChild(groupPosition: Int, childPosition: Int): Any = when (groupPosition) {
                 0 -> groupsList[childPosition]
                 1 -> teachersList[childPosition]
+                2 -> othersList[childPosition]
                 else -> ""
             }
 
@@ -122,6 +128,7 @@ class SavedFragment : Fragment() {
                 binding.itemText.text = when (groupPosition) {
                     0 -> groupsList[childPosition]
                     1 -> teachersList[childPosition]
+                    2 -> othersList[childPosition]
                     else -> ""
                 }
                 return binding.root
@@ -133,10 +140,16 @@ class SavedFragment : Fragment() {
         })
 
         binding.expandableListView.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
-            val type = if (groupPosition == 0) "group" else "teacher"
+            val type = when (groupPosition) {
+                0 -> "group"
+                1 -> "teacher"
+                2 -> "other"
+                else -> ""
+            }
             val name = when (groupPosition) {
                 0 -> groupsList[childPosition]
                 1 -> teachersList[childPosition]
+                2 -> othersList[childPosition]
                 else -> ""
             }
             openFavoriteSchedule(name, type)
@@ -145,6 +158,7 @@ class SavedFragment : Fragment() {
     }
 
     private fun openFavoriteSchedule(name: String, type: String) {
+        Log.d("test","openfromfavorite")
         val fr = RaspisanieFragment.send(name, type)
         parentFragmentManager.beginTransaction()
             .replace(R.id.main_cont, fr)

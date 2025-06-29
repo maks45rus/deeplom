@@ -1,14 +1,10 @@
-package com.example.raspisanieshgpu
+package com.example.raspisanieshgpu.main
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
-import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.raspisanieshgpu.Data.DataManager
+import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.databinding.ActivityMainBinding
 import com.example.raspisanieshgpu.fragments.HomeFragment
 import com.example.raspisanieshgpu.fragments.favoriteDir.SavedFragment
@@ -18,10 +14,9 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
-
-
     private lateinit var binding: ActivityMainBinding
     private lateinit var workManagerHelper: WorkManagerHelper
+    private val viewModel: MainActivityVM by viewModels()
 
     private val homeFragment = HomeFragment()
     private val savedFragment = SavedFragment()
@@ -29,31 +24,45 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         workManagerHelper = WorkManagerHelper(this)
         workManagerHelper.setupScheduleCheckWorker()
 
+        // Инициализируем мониторинг сети
+        viewModel.setupNetworkMonitor(this)
 
+
+
+        setupVersionInfo()
+        setupObservers()
+        setupButtonListeners()
+
+        if (savedInstanceState == null) {
+            loadFragment(homeFragment)
+            updateButtonState(R.id.btnSaved)
+        }
+    }
+
+    private fun setupVersionInfo() {
         val pk = packageManager.getPackageInfo(packageName, 0)
-        binding.versionName.text = "${pk.versionName}"
+        binding.versionName.text = "v${pk.versionName}"
+    }
 
+    private fun setupObservers() {
         lifecycleScope.launch {
-            try {
-                if(!isInternetAvailable()){
+            viewModel.internetStatus.collect { isAvailable ->
+                if (!isAvailable) {
                     showNoInternetIcon()
-                    throw Exception("internet error")
+                } else {
+                    hideNoInternetIcon()
                 }
-                DataManager.refreshGroups(applicationContext)
-                DataManager.refreshTeachers(applicationContext)
-                Log.d("DataUpdateMainActivity", "database updated")
-
-            } catch (e: Exception) {
-                Log.e("DataUpdateMainActivity","error:",e)
             }
         }
+    }
 
+    private fun setupButtonListeners() {
         binding.btnSearch.setOnClickListener {
             loadFragment(searchFragment)
             updateButtonState(R.id.btnSearch)
@@ -63,34 +72,17 @@ class MainActivity : AppCompatActivity() {
             loadFragment(savedFragment)
             updateButtonState(R.id.btnSaved)
         }
-
-        if (savedInstanceState == null) {
-            loadFragment(homeFragment)
-            updateButtonState(R.id.btnSaved)
-        }
     }
-
-
 
     private fun showNoInternetIcon() {
-        runOnUiThread {
-            binding.errorTextMain.text = getString(R.string.no_internet_connection)
-            binding.internetStatusIcon.visibility = android.view.View.VISIBLE
-        }
+        binding.errorTextMain.text = getString(R.string.no_internet_connection)
+        binding.internetStatusIcon.visibility = android.view.View.VISIBLE
     }
 
-
-
-
-    private fun isInternetAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    private fun hideNoInternetIcon() {
+        binding.errorTextMain.text = ""
+        binding.internetStatusIcon.visibility = android.view.View.GONE
     }
-
 
     private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
         supportFragmentManager.beginTransaction()
@@ -103,7 +95,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnSearch.isSelected = selectedButtonId == R.id.btnSearch
         binding.btnSaved.isSelected = selectedButtonId == R.id.btnSaved
     }
-
 
 
 }

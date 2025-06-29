@@ -9,18 +9,18 @@ import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
 import kotlinx.coroutines.launch
 
 class SavedVM(
-    private val context: Context
 ) : ViewModel() {
     private val _favoritesState = MutableStateFlow<FavoriteState>(FavoriteState.Loading)
     val favoritesState: StateFlow<FavoriteState> = _favoritesState
 
-    fun loadFavorites() {
+    fun loadFavorites(context: Context) {
         viewModelScope.launch {
             try {
                 val db = MainDataBase.getInstance(context)
                 val groups = db.getGroupDao().getFavorites().map { it.name }
                 val teachers = db.getTeacherDao().getFavorites().map { it.name }
-                _favoritesState.value = FavoriteState.Loaded(groups, teachers)
+                val others = db.getSavedOtherDao().getAllSavedOther().map { it.name }
+                _favoritesState.value = FavoriteState.Loaded(groups, teachers, others)
             } catch (e: Exception) {
                 _favoritesState.value = FavoriteState.Error(e.message ?: "Error loading favorites")
             }

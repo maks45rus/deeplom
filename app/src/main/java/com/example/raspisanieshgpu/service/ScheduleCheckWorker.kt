@@ -7,7 +7,10 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.raspisanieshgpu.Data.DataBase.Group
 import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
+import com.example.raspisanieshgpu.Data.DataBase.SavedOther
+import com.example.raspisanieshgpu.Data.DataBase.Teacher
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.Data.DataManager
 import com.example.raspisanieshgpu.api.models.PairsResponse
@@ -21,7 +24,6 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     private val db by lazy { MainDataBase.getInstance(applicationContext) }
-    private val gson = Gson()
     private val notificationManager by lazy {
         applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
@@ -55,74 +57,82 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
         val today = LocalDate.now()
         val weekStart = getWeekStartDate(today).format(format)
 
-
         // Проверяем избранные группы
-        checkGroupsSchedule(weekStart)
+        checkFavoritesSchedule(
+            weekStart = weekStart,
+            type = "group",
+            getName = { (it as Group).name },
+            getFavorites = { db.getGroupDao().getFavorites() },
+            getCachedSchedule = { (it as Group).scheduleData },
+            getWeekStartDate = { (it as Group).weekStartDate }
+        )
 
         // Проверяем избранных преподавателей
-        checkTeachersSchedule(weekStart)
+        checkFavoritesSchedule(
+            weekStart = weekStart,
+            type = "teacher",
+            getName = { (it as Teacher).name },
+            getFavorites = { db.getTeacherDao().getFavorites() },
+            getCachedSchedule = { (it as Teacher).scheduleData },
+            getWeekStartDate = { (it as Teacher).weekStartDate }
+        )
+
+        // Проверяем другие избранные элементы
+        checkFavoritesSchedule(
+            weekStart = weekStart,
+            type = "other",
+            getName = { (it as SavedOther).name },
+            getFavorites = { db.getSavedOtherDao().getAllSavedOther() },
+            getCachedSchedule = { (it as SavedOther).scheduleData },
+            getWeekStartDate = { (it as SavedOther).weekStartDate }
+        )
+
     }
 
-    private suspend fun checkGroupsSchedule(weekStart: String) {
-        val favoriteGroups = db.getGroupDao().getFavorites()
+    private suspend fun checkFavoritesSchedule(
+        weekStart: String,
+        type: String,
+        getName: (Any) -> String,
+        getFavorites: suspend () -> List<Any>,
+        getCachedSchedule: (Any) -> String,
+        getWeekStartDate: (Any) -> String
+    ) {
+        val favorites = getFavorites()
 
-        for (group in favoriteGroups) {
+        for (item in favorites) {
             try {
-                val cachedSchedule = group.scheduleData
+                val cachedSchedule = getCachedSchedule(item)
                 val apiSchedule = DataManager.fetchPairs(
                     weekStart,
                     1,
-                    group.name,
-                    "group",
-                    applicationContext,
-                )
-                if (weekStart == group.weekStartDate && apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
-                        showNotification(
-                            "Изменение расписания",
-                            "Обнаружены изменения в расписании группы ${group.name}"
-                        )
-                }
-                DataManager.saveCachedSchedule(
-                    "group",
-                    group.name,
-                    apiSchedule,
-                    weekStart,
-                    applicationContext,
-                )
-            } catch (e: Exception) {
-                Log.e("ScheduleCheckWorker", "Error checking group ${group.name}", e)
-            }
-        }
-    }
-
-    private suspend fun checkTeachersSchedule(weekStart: String) {
-        val favoriteTeachers = db.getTeacherDao().getFavorites()
-
-        for (teacher in favoriteTeachers) {
-            try {
-                val cachedSchedule = teacher.scheduleData
-                val apiSchedule = DataManager.fetchPairs(
-                    weekStart,
-                    1,
-                    teacher.name,
-                    "teacher",
-                    applicationContext,
+                    getName(item),
+                    type,
+                    applicationContext
                 )
 
-                if (weekStart == teacher.weekStartDate && apiSchedule.ok && hasScheduleChanged(cachedSchedule, apiSchedule)) {
+                if (weekStart == getWeekStartDate(item) &&
+                    apiSchedule.ok &&
+                    hasScheduleChanged(cachedSchedule, apiSchedule)) {
+
                     showNotification(
-                        "Изменение расписания",
-                        "Обнаружены изменения в расписании преподавателя ${teacher.name}"
+                        applicationContext.getString(R.string.schedule_change_title),
+                        applicationContext.getString(
+                            R.string.schedule_change_message,
+                            type,
+                            getName(item)
+                        )
                     )
                 }
-                DataManager.saveCachedSchedule("teacher",
-                    teacher.name,
+
+                DataManager.saveCachedSchedule(
+                    type,
+                    getName(item),
                     apiSchedule,
                     weekStart,
-                    applicationContext,
+                    applicationContext
                 )
             } catch (e: Exception) {
-                Log.e("ScheduleCheckWorker", "Error checking teacher ${teacher.name}", e)
+                Log.e("ScheduleCheckWorker", "Error checking $type ${getName(item)}", e)
             }
         }
     }
@@ -136,7 +146,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
             return false
         }
         return cachedJson != Gson().toJson(newSchedule)
-
+//      return true
     }
 
     private fun showNotification(title: String, message: String) {
@@ -160,7 +170,7 @@ class ScheduleCheckWorker(context: Context, workerParams: WorkerParameters) :
 
             val channel = NotificationChannel(
                 "schedule_changes",
-                "Изменения расписания",
+                applicationContext.getString(R.string.schedule_change_title),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Уведомления об изменениях в расписании"

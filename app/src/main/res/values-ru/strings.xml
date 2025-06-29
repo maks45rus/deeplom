@@ -13,9 +13,11 @@
     <string name="groups">Группы</string>
     <string name="teachers">Преподаватели</string>
     <string name="find">Найти</string>
+    <string name="open_search">свободный поиск</string>
     <string name="selectchip">Выберите группу или преподавателя</string>
     <string name="groups_header">Группы</string>
     <string name="teachers_header">Преподаватели</string>
+    <string name="others_header">Другое</string>
 
     <!-- Schedule -->
     <string name="Monday">ПН</string>
@@ -25,6 +27,10 @@
     <string name="Friday">ПТ</string>
     <string name="Saturday">СБ</string>
     <string name="no_class">Нет пар</string>
+    <string name="schedule_change_title">Изменение расписания</string>
+    <string name="schedule_change_message">Обнаружены изменения в расписании %1$s %2$s</string>
+    <string name="group_type">группы</string>
+    <string name="teacher_type">преподавателя</string>
 
     <!-- Errors -->
     <string name="error_schedule">Не удалось загрузить расписание :(</string>

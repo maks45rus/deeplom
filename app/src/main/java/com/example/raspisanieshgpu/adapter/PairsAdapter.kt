@@ -19,7 +19,8 @@ class PairsAdapter(context: Context) :
         "9:40 - 11:10",
         "11:20 - 12:50",
         "13:20 - 14:50",
-        "15:00 - 16:30"
+        "15:00 - 16:30",
+        "16:40 - 18:10"
     )
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

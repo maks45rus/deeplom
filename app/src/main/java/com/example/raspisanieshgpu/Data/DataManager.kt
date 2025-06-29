@@ -4,11 +4,11 @@ import android.content.Context
 import android.util.Log
 import com.example.raspisanieshgpu.Data.DataBase.Group
 import com.example.raspisanieshgpu.Data.DataBase.MainDataBase
+import com.example.raspisanieshgpu.Data.DataBase.SavedOther
 import com.example.raspisanieshgpu.Data.DataBase.Teacher
 import com.example.raspisanieshgpu.R
 import com.example.raspisanieshgpu.api.RetrofitClient.apiService
 import com.example.raspisanieshgpu.api.models.AvailableSchedule
-import com.example.raspisanieshgpu.api.models.Date
 import com.example.raspisanieshgpu.api.models.PairsResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +86,7 @@ object DataManager {
             when (entityType) {
                 "group" -> handleGroupFavorite(entityName,context)
                 "teacher" -> handleTeacherFavorite(entityName,context)
-                else -> false
+                else -> handleOtherFavorite(entityName,context)
             }
         } catch (e: Exception) {
             Log.e("Favorite", "Error toggling favorite status for $entityType: $entityName", e)
@@ -127,6 +127,26 @@ object DataManager {
         }
     }
 
+    private suspend fun handleOtherFavorite(name: String, context: Context): Boolean {
+        try {
+            val db = MainDataBase.getInstance(context)
+            val other = db.getSavedOtherDao().getSavedOther(name)
+            if(other != null){
+                db.getSavedOtherDao().deleteSavedOther(name)
+            } else db.getSavedOtherDao().insert(
+                SavedOther(
+                0,
+                name,
+                )
+            )
+            Log.d("Favorite", "Group ${(other != null)} favorite status toggled to ${(other == null)}")
+            return (other == null)
+        } catch (e: Exception) {
+            Log.w("Favorite", "other not found: $name")
+            return false
+        }
+    }
+
 
     fun isApiAvailable(): Boolean {
         return true
@@ -138,17 +158,22 @@ object DataManager {
 
     suspend fun fetchPairs(date: String, week: Int, name: String, pairsfor: String, context: Context): PairsResponse {
         var response: PairsResponse
-        val id: Int
         withContext(Dispatchers.IO) {
             try {
                 val db = MainDataBase.getInstance(context)
                 val id: Int
-                response = if (pairsfor == "group") {
-                    id = db.getGroupDao().getGroupByName(name).id
-                    apiService.getPairsGroup(date, week, id)
-                } else {
-                    id = db.getTeacherDao().getTeacherByName(name).id
-                    apiService.getPairsTeacher(date, week, id)
+                response = when(pairsfor) {
+                    "group" -> {
+                        id = db.getGroupDao().getGroupByName(name).id
+                        apiService.getPairsGroup(date, week, id)
+                    }
+                    "teacher" -> {
+                        id = db.getTeacherDao().getTeacherByName(name).id
+                        apiService.getPairsTeacher(date, week, id)
+                    }
+                    else -> {
+                        apiService.getPairsQuery(date, week, name)
+                    }
                 }
                 Log.d("DataManager", "Fetch pairs success for $pairsfor $name")
 
@@ -175,13 +200,19 @@ object DataManager {
                 if(!schedule.ok) throw Exception((schedule.error).toString())
                 if(!schedule.result.available) throw Exception((R.string.schedule_not_available).toString())
                 val db = MainDataBase.getInstance(context)
-                if(type == "group"){
-                    db.getGroupDao().setWeekStartDate(name, weekStart)
-                    db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
-                }
-                else{
-                    db.getTeacherDao().setWeekStartDate(name, weekStart)
-                    db.getTeacherDao().setScheduleData(name,Gson().toJson(schedule))
+                when(type) {
+                    "group" -> {
+                        db.getGroupDao().setWeekStartDate(name, weekStart)
+                        db.getGroupDao().setScheduleData(name, Gson().toJson(schedule))
+                    }
+                    "teacher" -> {
+                        db.getTeacherDao().setWeekStartDate(name, weekStart)
+                        db.getTeacherDao().setScheduleData(name, Gson().toJson(schedule))
+                    }
+                    else -> {
+                        db.getSavedOtherDao().setWeekStartDate(name,weekStart)
+                        db.getSavedOtherDao().setScheduleData(name, Gson().toJson(schedule))
+                    }
                 }
                 Log.d("DataManager", "Schedule for ${name} saved")
                 true
@@ -205,10 +236,16 @@ object DataManager {
         return withContext(Dispatchers.IO) {
             try {
                 val db = MainDataBase.getInstance(context)
-                json = if (type == "group") {
-                    db.getGroupDao().getScheduleData(name)
-                } else {
-                    db.getTeacherDao().getScheduleData(name)
+                json = when(type){
+                    "group" -> {
+                        db.getGroupDao().getScheduleData(name)
+                    }
+                    "teacher" -> {
+                        db.getTeacherDao().getScheduleData(name)
+                    }
+                    else -> {
+                        db.getSavedOtherDao().getScheduleData(name)
+                    }
                 }
                 if(json == "") throw Exception("no cached schedule")
                 ret = Gson().fromJson(json, PairsResponse::class.java)

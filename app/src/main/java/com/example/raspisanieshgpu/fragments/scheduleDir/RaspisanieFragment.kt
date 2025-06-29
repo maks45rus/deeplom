@@ -32,7 +32,7 @@ class RaspisanieFragment : Fragment() {
     private lateinit var currentDate: LocalDate
     private var isLoading = false
     private var available: Boolean = true
-    private var isFavorite = false
+    private var isFavorite = true
     private var namesearch = "430б"
     private var pairsfor = "group"
     private var rasp: MutableList<String> = mutableListOf("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
@@ -59,7 +59,7 @@ class RaspisanieFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel = RaspisanieVM(requireContext())
+        viewModel = RaspisanieVM()
         binding = FragmentRaspisanieBinding.inflate(inflater, container, false)
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
@@ -79,14 +79,16 @@ class RaspisanieFragment : Fragment() {
     }
 
     private fun loadInitialData() {
+
         viewModel.loadScheduleForWeek(currentDate, namesearch, pairsfor, requireContext())
+        changedate(currentDate)
     }
 
     private fun initArguments() {
 
         namesearch = arguments?.getString(NAME_SEARCH).toString()
         pairsfor = arguments?.getString(PAIRS_FOR).toString()
-        viewModel.checkFavoriteStatus(namesearch, pairsfor)
+        viewModel.checkFavoriteStatus(namesearch, pairsfor, requireContext())
         updateHomeButton(isHomeItem(namesearch,pairsfor))
         currentDate = LocalDate.now().let { date ->
             if (date.dayOfWeek == DayOfWeek.SUNDAY) date.plusDays(1) else date
@@ -115,7 +117,7 @@ class RaspisanieFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnFavorite.setOnClickListener {
-            viewModel.toggleFavorite(namesearch, pairsfor)
+            viewModel.toggleFavorite(namesearch, pairsfor, requireContext())
         }
 
         binding.btnSethome.setOnClickListener {
@@ -220,9 +222,11 @@ class RaspisanieFragment : Fragment() {
             }
         }
         viewModel.favoriteState.observe(viewLifecycleOwner) { favorite ->
-            isFavorite = favorite
+            if(isFavorite != favorite) {
+                isFavorite = favorite
+                if(isFavorite)loadInitialData()
+            }
             Log.d("FavoriteStatus", "Favorite status updated: $isFavorite")
-            if(isFavorite)loadInitialData()
             updateFavoriteButton(favorite)
         }
     }
@@ -246,14 +250,14 @@ class RaspisanieFragment : Fragment() {
                 errorloading(Exception("not available"))
                 return
             }
-            // Очищаем только 5 пар
-            rasp = MutableList(5) { "-" }
+
+            rasp = MutableList(6) { "-" }
 
             if (!days.isNullOrEmpty()) {
                 for (day in days) {
                     if (day.date == date.format(format)) {
                         day.pairs.forEach { para ->
-                            if (para.num - 1 < 5) {
+                            if (para.num - 1 < 6) {
                                 rasp[para.num - 1] = para.text
                             }
                         }
@@ -318,7 +322,6 @@ class RaspisanieFragment : Fragment() {
     private fun updateFavoriteButton(fav: Boolean) {
         binding.btnFavorite.setImageResource(
             if (fav){
-                viewModel.loadScheduleForWeek(selectedDate, namesearch, pairsfor, requireContext())
                 R.drawable.baseline_star_24_selected
             }
             else R.drawable.baseline_star_24_unselected

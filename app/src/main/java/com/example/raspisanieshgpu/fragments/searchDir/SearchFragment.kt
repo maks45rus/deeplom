@@ -28,6 +28,8 @@ class SearchFragment : Fragment() {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
         viewModel = SearchVM(requireContext())
 
+        viewModel.setType("group")
+
 
         return binding.root
     }
@@ -40,6 +42,9 @@ class SearchFragment : Fragment() {
         setupSearchInput()
         observeViewModel()
 
+
+
+
     }
 
     private fun setupAdapter() {
@@ -50,7 +55,11 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupButtons() {
-        viewModel.setType("group")
+
+        binding.searchButton.setOnClickListener {
+            openScheduleFragment(binding.searchInput.text.toString())
+        }
+
         binding.btnGroup.setOnClickListener {
             viewModel.setType("group")
         }
@@ -60,6 +69,16 @@ class SearchFragment : Fragment() {
         }
 
 
+        binding.freeSearchCheckbox.setOnCheckedChangeListener {b, check ->
+            if(check){
+                viewModel.setType("")
+                binding.searchButton.visibility = android.view.View.VISIBLE
+                binding.searchList.visibility = android.view.View.GONE
+            }else{
+                binding.searchButton.visibility = android.view.View.GONE
+                binding.searchList.visibility = android.view.View.VISIBLE
+            }
+        }
     }
 
     private fun setupSearchInput() {
@@ -92,18 +111,31 @@ class SearchFragment : Fragment() {
         }
         viewModel.currentType.observe(viewLifecycleOwner) { type ->
             updateButtonSelection(type)
+            viewModel.search(binding.searchInput.text?.toString()?.trim() ?: "")
         }
     }
 
     private fun updateButtonSelection(type: String) {
+
+        binding.searchButton.visibility = android.view.View.GONE
+        binding.searchList.visibility = android.view.View.VISIBLE
+
         when (type) {
             "group" -> {
+                binding.freeSearchCheckbox.isChecked = false
                 setButtonSelected(binding.btnGroup, true)
                 setButtonSelected(binding.btnTeacher, false)
             }
             "teacher" -> {
+                binding.freeSearchCheckbox.isChecked = false
                 setButtonSelected(binding.btnGroup, false)
                 setButtonSelected(binding.btnTeacher, true)
+            }
+            else -> {
+                binding.searchButton.visibility = android.view.View.VISIBLE
+                binding.searchList.visibility = android.view.View.GONE
+                setButtonSelected(binding.btnGroup, false)
+                setButtonSelected(binding.btnTeacher, false)
             }
         }
     }
@@ -112,9 +144,11 @@ class SearchFragment : Fragment() {
         button.isSelected = isSelected
         if (isSelected) {
             button.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.green_light))
+            button.setIconTintResource(android.R.color.white)
             button.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
         } else {
             button.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.transparent))
+            button.setIconTintResource(R.color.green_light)
             button.setTextColor(ContextCompat.getColor(requireContext(), R.color.green_light))
         }
     }
@@ -136,7 +170,7 @@ class SearchFragment : Fragment() {
     private fun successloading(){
         binding.progressBar.visibility = View.GONE
         binding.errorTextView.visibility = View.GONE
-        binding.searchList.visibility = View.VISIBLE
+        updateButtonSelection(viewModel.currentType.value!!)
     }
 
     private fun errorloading(e: Exception) {

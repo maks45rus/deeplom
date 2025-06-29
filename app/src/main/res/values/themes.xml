@@ -4,14 +4,13 @@
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
 
-
         <!-- Цвета панелей (должны быть непрозрачными) -->
         <item name="android:statusBarColor">@color/green_gray</item>
         <item name="android:navigationBarColor">@color/green_gray</item>
 
-
         <!-- Критически важный параметр: добавляет отступы для системных панелей -->
         <item name="android:fitsSystemWindows">true</item>
+
     </style>
 
     <style name="Theme.Raspisanieshgpu" parent="Base.Theme.Raspisanieshgpu" />

@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
@@ -23,6 +22,10 @@ class WorkManagerHelper(private val context: Context) {
         val periodicWorkRequest = PeriodicWorkRequestBuilder<ScheduleCheckWorker>(
             30, TimeUnit.MINUTES,
         ).setConstraints(constraints).build()
+//        val oneTimeWorkRequest = OneTimeWorkRequestBuilder<ScheduleCheckWorker>()
+//            .setInitialDelay(10, TimeUnit.SECONDS)
+//            .setConstraints(constraints)
+//            .build()
 
 
         workManager.apply {
@@ -32,6 +35,9 @@ class WorkManagerHelper(private val context: Context) {
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest,
             )
+
+//            enqueue(oneTimeWorkRequest)
+
         }
 
 
